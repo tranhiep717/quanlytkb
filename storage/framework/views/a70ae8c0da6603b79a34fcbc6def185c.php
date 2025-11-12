@@ -1,0 +1,367 @@
+
+
+<?php $__env->startSection('title', 'Quản lý Ca học'); ?>
+
+<?php $__env->startSection('content'); ?>
+<style>
+    .table-zebra tbody tr:nth-child(even) {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .table-zebra tbody tr:hover {
+        background-color: rgba(59, 130, 246, 0.1);
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all .2s;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+    }
+</style>
+
+<div style="background:white; padding:24px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <!-- Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h2 style="margin:0; font-size:20px; font-weight:600; color:#1e293b;">📅 Quản lý Ca học</h2>
+        <button onclick="openCreateModal()"
+            style="background:#16a34a; color:white; padding:10px 20px; border-radius:6px; border:none; font-weight:500; display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+            </svg>
+            Thêm Ca học
+        </button>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toastContainer" style="position:fixed; top:16px; right:16px; display:flex; flex-direction:column; gap:10px; z-index:10000;"></div>
+
+    <!-- Filters -->
+    <form method="GET" action="<?php echo e(route('shifts.index')); ?>" style="margin-bottom:20px;">
+        <div style="display:flex; gap:12px; align-items:end;">
+            <div style="flex:2;">
+                <label style="display:block; margin-bottom:6px; font-weight:500; color:#475569; font-size:14px;">Tìm kiếm</label>
+                <input type="text" name="q" value="<?php echo e($filters['q'] ?? ''); ?>" placeholder="Mã ca / Tên ca"
+                    style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
+            </div>
+            <div style="flex:1;">
+                <label style="display:block; margin-bottom:6px; font-weight:500; color:#475569; font-size:14px;">Thứ</label>
+                <select name="day" style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
+                    <option value="">-- Tất cả --</option>
+                    <?php for($i=1;$i<=7;$i++): ?>
+                        <option value="<?php echo e($i); ?>" <?php echo e(($filters['day'] ?? '') == $i ? 'selected' : ''); ?>><?php echo e([1=>'Thứ 2',2=>'Thứ 3',3=>'Thứ 4',4=>'Thứ 5',5=>'Thứ 6',6=>'Thứ 7',7=>'CN'][$i]); ?></option>
+                        <?php endfor; ?>
+                </select>
+            </div>
+            <div style="flex:1;">
+                <label style="display:block; margin-bottom:6px; font-weight:500; color:#475569; font-size:14px;">Khung</label>
+                <select name="frame" style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
+                    <option value="">-- Tất cả --</option>
+                    <option value="morning" <?php echo e(($filters['frame'] ?? '')=='morning' ? 'selected' : ''); ?>>Sáng</option>
+                    <option value="afternoon" <?php echo e(($filters['frame'] ?? '')=='afternoon' ? 'selected' : ''); ?>>Chiều</option>
+                    <option value="evening" <?php echo e(($filters['frame'] ?? '')=='evening' ? 'selected' : ''); ?>>Tối</option>
+                </select>
+            </div>
+            <div style="flex:1;">
+                <label style="display:block; margin-bottom:6px; font-weight:500; color:#475569; font-size:14px;">Trạng thái</label>
+                <select name="status" style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
+                    <option value="">-- Tất cả --</option>
+                    <option value="active" <?php echo e(($filters['status'] ?? '')=='active' ? 'selected' : ''); ?>>Hoạt động</option>
+                    <option value="inactive" <?php echo e(($filters['status'] ?? '')=='inactive' ? 'selected' : ''); ?>>Tạm ngưng</option>
+                </select>
+            </div>
+            <button type="submit" style="background:#1976d2; color:white; padding:10px 24px; border:none; border-radius:6px; cursor:pointer; font-weight:500; display:flex; align-items:center; gap:8px;">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                </svg>
+                Lọc
+            </button>
+            <?php if(request()->hasAny(['q','day','frame','status'])): ?>
+            <a href="<?php echo e(route('shifts.index')); ?>" style="padding:10px 20px; border:1px solid #cbd5e0; border-radius:6px; text-decoration:none; color:#475569; font-weight:500;">Xóa bộ lọc</a>
+            <?php endif; ?>
+        </div>
+    </form>
+
+    <!-- Table -->
+    <div style="overflow-x:auto;">
+        <table class="table-zebra" style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                    <th style="padding:12px; text-align:left; font-weight:600; color:#475569; font-size:13px;">MÃ CA</th>
+                    <th style="padding:12px; text-align:left; font-weight:600; color:#475569; font-size:13px;">TÊN CA</th>
+                    <th style="padding:12px; text-align:left; font-weight:600; color:#475569; font-size:13px;">THỨ</th>
+                    <th style="padding:12px; text-align:left; font-weight:600; color:#475569; font-size:13px;">GIỜ BẮT ĐẦU</th>
+                    <th style="padding:12px; text-align:left; font-weight:600; color:#475569; font-size:13px;">GIỜ KẾT THÚC</th>
+                    <th style="padding:12px; text-align:left; font-weight:600; color:#475569; font-size:13px;">KHUNG</th>
+                    <th style="padding:12px; text-align:center; font-weight:600; color:#475569; font-size:13px;">TRẠNG THÁI</th>
+                    <th style="padding:12px; text-align:center; font-weight:600; color:#475569; font-size:13px;">THAO TÁC</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $__empty_1 = true; $__currentLoopData = $shifts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $shift): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                <?php ($times = explode(' - ', $shift->time_range)); ?>
+                <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:12px;"><code style="background:#eef2ff; color:#3730a3; padding:4px 8px; border-radius:4px; font-size:13px; font-weight:600;"><?php echo e($shift->code ?? ('C'.$shift->day_of_week.$shift->start_period.'-'.$shift->end_period)); ?></code></td>
+                    <td style="padding:12px; font-weight:500; color:#1e293b;"><?php echo e($shift->name ?? ('Ca tiết '.$shift->start_period.'-'.$shift->end_period)); ?></td>
+                    <td style="padding:12px;"><span style="background:#dbeafe; color:#1e40af; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:500;"><?php echo e($shift->day_name); ?></span></td>
+                    <td style="padding:12px;"><?php echo e($times[0] ?? ''); ?></td>
+                    <td style="padding:12px;"><?php echo e($times[1] ?? ''); ?></td>
+                    <td style="padding:12px;"><?php echo e($shift->frame); ?></td>
+                    <td style="padding:12px; text-align:center;">
+                        <?php if(($shift->status ?? 'active') === 'active'): ?>
+                        <span style="background:#dcfce7; color:#166534; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600;">Hoạt động</span>
+                        <?php else: ?>
+                        <span style="background:#e5e7eb; color:#374151; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600;">Tạm ngưng</span>
+                        <?php endif; ?>
+                    </td>
+                    <td style="padding:12px; text-align:center;">
+                        <div style="display:inline-flex; gap:6px;">
+                            <button onclick="openDetailFromEl(this)"
+                                data-code="<?php echo e($shift->code); ?>"
+                                data-name="<?php echo e($shift->name); ?>"
+                                data-day="<?php echo e($shift->day_name); ?>"
+                                data-start="<?php echo e($times[0] ?? ''); ?>"
+                                data-end="<?php echo e($times[1] ?? ''); ?>"
+                                data-periods="<?php echo e($shift->start_period); ?>-<?php echo e($shift->end_period); ?>"
+                                data-frame="<?php echo e($shift->frame); ?>"
+                                data-status="<?php echo e($shift->status_label); ?>"
+                                class="action-btn" style="background:#10b981; color:white; border:none; cursor:pointer;" title="Xem chi tiết">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z" />
+                                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z" />
+                                </svg>
+                            </button>
+                            <a href="<?php echo e(route('shifts.edit', $shift)); ?>" class="action-btn" style="background:#1976d2; color:white; text-decoration:none;" title="Sửa">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3z" />
+                                    <path d="M.146 14.146a.5.5 0 0 0 .168.11l5 2a.5.5 0 0 0 .65-.65l-2-5a.5.5 0 0 0-.11-.168L.146 14.146z" />
+                                </svg>
+                            </a>
+                            <form action="<?php echo e(route('shifts.destroy', $shift)); ?>" method="POST" style="display:inline;" onsubmit="return confirmDeleteShift();">
+                                <?php echo csrf_field(); ?>
+                                <?php echo method_field('DELETE'); ?>
+                                <button type="submit" class="action-btn" style="background:#dc2626; color:white; border:none; cursor:pointer;" title="Xóa">
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zM8 5.5a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1z" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                <tr>
+                    <td colspan="8" style="padding:60px 20px; text-align:center; color:#94a3b8;">
+                        <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16" style="opacity:0.3; margin-bottom:16px;">
+                            <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z" />
+                        </svg>
+                        <div style="font-size:16px; font-weight:500;">Chưa có ca học nào</div>
+                        <div style="font-size:14px; margin-top:4px;">Thử thay đổi bộ lọc hoặc thêm ca học mới</div>
+                    </td>
+                </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <?php if($shifts->hasPages()): ?>
+    <div style="margin-top:24px; display:flex; justify-content:center;"><?php echo e($shifts->links()); ?></div>
+    <?php endif; ?>
+</div>
+
+<!-- Create Modal -->
+<div id="createModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:12px; width:90%; max-width:720px; max-height:85vh; overflow:auto; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">
+        <div style="padding:20px; border-bottom:2px solid #16a34a; background:linear-gradient(135deg,#16a34a 0%, #15803d 100%); color:white;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <h5 style="margin:0; font-size:18px;">Thêm Ca học</h5>
+                <button onclick="closeCreateModal()" style="background:transparent; border:none; color:white; font-size:20px; cursor:pointer;">×</button>
+            </div>
+        </div>
+        <div style="padding:20px;">
+            <form method="POST" action="<?php echo e(route('shifts.store')); ?>">
+                <?php echo csrf_field(); ?>
+                <?php if($errors->any()): ?>
+                <div style="background:#fee2e2; border:1px solid #ef4444; color:#991b1b; padding:10px 12px; border-radius:8px; margin-bottom:12px;">
+                    <strong>Lỗi:</strong>
+                    <ul style="margin:8px 0 0 16px;">
+                        <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $err): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($err); ?></li>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </ul>
+                </div>
+                <?php endif; ?>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div>
+                        <label style="display:block; margin-bottom:6px; color:#475569; font-size:14px;">Mã ca</label>
+                        <input type="text" name="code" value="<?php echo e(old('code')); ?>" maxlength="20" style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:6px; color:#475569; font-size:14px;">Tên ca <span class="text-danger">*</span></label>
+                        <input type="text" name="name" value="<?php echo e(old('name')); ?>" required style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:6px; color:#475569; font-size:14px;">Thứ <span class="text-danger">*</span></label>
+                        <select name="day_of_week" required style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
+                            <?php for($i=1;$i<=7;$i++): ?>
+                                <option value="<?php echo e($i); ?>" <?php echo e(old('day_of_week')==$i? 'selected':''); ?>><?php echo e([1=>'Thứ 2',2=>'Thứ 3',3=>'Thứ 4',4=>'Thứ 5',5=>'Thứ 6',6=>'Thứ 7',7=>'CN'][$i]); ?></option>
+                                <?php endfor; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:6px; color:#475569; font-size:14px;">Giờ bắt đầu <span class="text-danger">*</span></label>
+                        <input type="time" name="start_time" value="<?php echo e(old('start_time')); ?>" required style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:6px; color:#475569; font-size:14px;">Giờ kết thúc <span class="text-danger">*</span></label>
+                        <input type="time" name="end_time" value="<?php echo e(old('end_time')); ?>" required style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:6px; color:#475569; font-size:14px;">Trạng thái</label>
+                        <select name="status" style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
+                            <option value="active" <?php echo e(old('status','active')==='active'?'selected':''); ?>>Hoạt động</option>
+                            <option value="inactive" <?php echo e(old('status')==='inactive'?'selected':''); ?>>Tạm ngưng</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top:16px; text-align:right;">
+                    <button type="button" onclick="closeCreateModal()" style="padding:10px 20px; border:1px solid #cbd5e0; border-radius:6px; background:white; color:#475569; cursor:pointer; margin-right:8px;">Đóng</button>
+                    <button type="submit" style="background:#1976d2; color:white; padding:10px 24px; border:none; border-radius:6px; cursor:pointer; font-weight:500;">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div id="detailModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:12px; width:90%; max-width:600px; max-height:80vh; overflow:auto; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);">
+        <div style="padding:20px; border-bottom:2px solid #1976d2; background:linear-gradient(135deg,#1976d2 0%, #0f4da8 100%); color:white;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+                <h5 style="margin:0; font-size:18px;">Chi tiết Ca học</h5>
+                <button onclick="closeDetail()" style="background:transparent; border:none; color:white; font-size:20px; cursor:pointer;">×</button>
+            </div>
+        </div>
+        <div style="padding:20px;" id="detailBody">—</div>
+        <div style="padding:12px 20px; text-align:right;">
+            <button onclick="closeDetail()" style="padding:10px 20px; border:1px solid #cbd5e0; border-radius:6px; background:white; color:#475569; cursor:pointer;">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<!-- Business Error Dialog (delete constraints) -->
+<?php if(session('error')): ?>
+<div id="errorDialog" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:10001;">
+    <div style="background:#fff1f2; border:1px solid #ef4444; color:#991b1b; border-radius:12px; width:90%; max-width:560px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);">
+        <div style="padding:16px 20px; border-bottom:1px solid #fecaca; display:flex; justify-content:space-between; align-items:center;">
+            <strong>Lỗi</strong>
+            <button onclick="document.getElementById('errorDialog').remove();" style="background:transparent; border:none; font-size:20px; color:#991b1b; cursor:pointer;">×</button>
+        </div>
+        <div style="padding:16px 20px;"><?php echo e(session('error')); ?></div>
+        <div style="padding:12px 20px; text-align:right;">
+            <button onclick="document.getElementById('errorDialog').remove();" style="background:#ef4444; color:white; padding:8px 16px; border:none; border-radius:8px; cursor:pointer;">Đóng</button>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('scripts'); ?>
+<script>
+    function openCreateModal() {
+        document.getElementById('createModal').style.display = 'flex';
+    }
+
+    function closeCreateModal() {
+        document.getElementById('createModal').style.display = 'none';
+    }
+
+    function confirmDeleteShift() {
+        return confirm('Bạn có chắc muốn xóa ca học này? Nếu ca học đang được tham chiếu trong Lớp học phần, đề xuất Tạm ngưng thay vì xóa.');
+    }
+
+    function openDetail(data) {
+        const body = document.getElementById('detailBody');
+        const time = (data.start || '') + (data.end ? (' - ' + data.end) : '');
+        body.innerHTML = `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div><label style=\"font-size:13px; color:#64748b;\">Mã ca</label><div style=\"background:#f1f5f9; padding:10px; border-radius:6px; margin-top:6px;\">${data.code||'—'}</div></div>
+            <div><label style=\"font-size:13px; color:#64748b;\">Tên ca</label><div style=\"background:#f1f5f9; padding:10px; border-radius:6px; margin-top:6px;\">${data.name||'—'}</div></div>
+            <div><label style=\"font-size:13px; color:#64748b;\">Thứ</label><div style=\"background:#f1f5f9; padding:10px; border-radius:6px; margin-top:6px;\">${data.day||'—'}</div></div>
+            <div><label style=\"font-size:13px; color:#64748b;\">Thời gian</label><div style=\"background:#f1f5f9; padding:10px; border-radius:6px; margin-top:6px;\">${time||'—'}</div></div>
+            <div><label style=\"font-size:13px; color:#64748b;\">Khoảng tiết</label><div style=\"background:#f1f5f9; padding:10px; border-radius:6px; margin-top:6px;\">${data.periods||'—'}</div></div>
+            <div><label style=\"font-size:13px; color:#64748b;\">Khung</label><div style=\"background:#f1f5f9; padding:10px; border-radius:6px; margin-top:6px;\">${data.frame||'—'}</div></div>
+            <div><label style=\"font-size:13px; color:#64748b;\">Trạng thái</label><div style=\"background:${data.status==='Hoạt động'?'#dcfce7':'#e5e7eb'}; color:${data.status==='Hoạt động'?'#166534':'#374151'}; padding:6px 12px; border-radius:12px; margin-top:6px; display:inline-block;\">${data.status||'—'}</div></div>
+        </div>
+    `;
+        document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function closeDetail() {
+        document.getElementById('detailModal').style.display = 'none';
+    }
+
+    function openDetailFromEl(el) {
+        const data = {
+            code: el.dataset.code || null,
+            name: el.dataset.name || null,
+            day: el.dataset.day || null,
+            start: el.dataset.start || null,
+            end: el.dataset.end || null,
+            periods: el.dataset.periods || null,
+            frame: el.dataset.frame || null,
+            status: el.dataset.status || null,
+        };
+        openDetail(data);
+    }
+
+    // Close on backdrop click
+    ['createModal', 'detailModal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('click', function(e) {
+            if (e.target === this) this.style.display = 'none';
+        });
+    });
+
+    // Toast helpers
+    function showToast(message, type = 'success') {
+        const wrap = document.getElementById('toastContainer');
+        if (!wrap) return;
+        const el = document.createElement('div');
+        el.setAttribute('role', 'alert');
+        el.setAttribute('aria-live', 'assertive');
+        el.style.cssText = `min-width:320px; max-width:520px; padding:14px 16px; border-radius:10px; color:#ffffff; background:${type==='error' ? '#dc2626' : '#16a34a'}; box-shadow:0 8px 24px rgba(0,0,0,0.18); display:flex; align-items:center; gap:12px;`;
+        const icon = type === 'error' ?
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10Z" fill="rgba(255,255,255,0.25)"/><path d="M13 13H11V7h2v6Zm0 4H11v-2h2v2Z" fill="#fff"/></svg>' :
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10Z" fill="rgba(255,255,255,0.25)"/><path d="m10 14.586-2.293-2.293-1.414 1.414L10 17.414l7.707-7.707-1.414-1.414L10 14.586Z" fill="#fff"/></svg>';
+        el.innerHTML = `${icon}<div style="font-weight:700; letter-spacing:.2px;">${type==='error'?'Lỗi':'Thành công'}</div><div style="flex:1 1 auto;">${message}</div><button aria-label="Đóng thông báo" style="background:transparent; border:none; color:#fff; font-size:18px; line-height:1; cursor:pointer;" onclick="this.parentElement.remove()">×</button>`;
+        wrap.appendChild(el);
+        setTimeout(() => {
+            el.remove();
+        }, 4000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if(session('success')): ?>
+        showToast(<?php echo json_encode(session('success'), 15, 512) ?>, 'success');
+        <?php endif; ?>
+        <?php if(session('system_error')): ?>
+        showToast(<?php echo json_encode(session('system_error'), 15, 512) ?>, 'error');
+        <?php endif; ?>
+    <?php if($errors->any()): ?>
+        // If validation errors occurred during create, reopen modal
+        openCreateModal();
+        <?php endif; ?>
+    });
+</script>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('admin.layout', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\quanlytkbieu\resources\views/admin/shifts/index2.blade.php ENDPATH**/ ?>
