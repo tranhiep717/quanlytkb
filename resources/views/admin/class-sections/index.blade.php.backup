@@ -1,0 +1,1061 @@
+@extends('admin.layout')
+
+@section('title', 'Quản lý Lớp học phần')
+
+@section('styles')
+<style>
+    /* Header Styles */
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .page-header h2 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .page-header p {
+        margin: 8px 0 0 0;
+        opacity: 0.9;
+        font-size: 14px;
+    }
+    
+    .btn-add-new {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+        color: white;
+        padding: 14px 28px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .btn-add-new:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+        color: white;
+    }
+    
+    .btn-add-new i {
+        font-size: 18px;
+    }
+    
+    /* Filter Card */
+    .filter-card {
+        background: white;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .filter-card .card-header {
+        background: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 1rem 1.5rem;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .filter-card label {
+        font-weight: 600;
+        color: #475569;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    
+    .filter-card .form-control,
+    .filter-card .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    
+    .filter-card .form-control:focus,
+    .filter-card .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Table Styles */
+    .data-table-card {
+        background: white;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+    
+    .data-table-card .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.2rem 1.5rem;
+        border: none;
+    }
+    
+    .data-table-card .card-header h5 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .data-table {
+        width: 100%;
+        margin: 0;
+    }
+    
+    .data-table thead th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 16px 12px;
+        border-bottom: 3px solid #e2e8f0;
+        white-space: nowrap;
+    }
+    
+    .data-table tbody td {
+        padding: 14px 12px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+    }
+    
+    .data-table tbody tr {
+        transition: all 0.2s;
+    }
+    
+    .data-table tbody tr:hover {
+        background: #f8fafc;
+        transform: scale(1.001);
+    }
+    
+    /* Badges */
+    .badge-code {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 0.3px;
+    }
+    
+    .badge-faculty {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 11px;
+    }
+    
+    .badge-status-active {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 12px;
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+    }
+    
+    .badge-status-locked {
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 12px;
+    }
+    
+    .badge-capacity {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 12px;
+    }
+    
+    .badge-capacity.low {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+    
+    .badge-capacity.medium {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+    
+    .badge-capacity.high {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+    }
+    
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 16px;
+    }
+    
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-view {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+    }
+    
+    .btn-edit {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+    
+    .btn-delete {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+    
+    /* Progress Bar */
+    .capacity-progress {
+        width: 100%;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 6px;
+    }
+    
+    .capacity-progress-bar {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+    
+    .capacity-progress-bar.low {
+        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    }
+    
+    .capacity-progress-bar.medium {
+        background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .capacity-progress-bar.high {
+        background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    .empty-state i {
+        font-size: 80px;
+        color: #cbd5e1;
+        margin-bottom: 1.5rem;
+    }
+    
+    .empty-state h4 {
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state p {
+        color: #94a3b8;
+        margin-bottom: 2rem;
+    }
+    
+    /* Pagination */
+    .pagination-info {
+        color: #64748b;
+        font-size: 14px;
+    }
+</style>
+@endsection
+
+@section('content')
+<div class="container-fluid py-4">
+    <!-- Header with Add Button -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2>
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Quản lý Lớp học phần
+                </h2>
+                <p>Tìm kiếm, xem, thêm, sửa, xóa lớp học phần (UC2.7)</p>
+            </div>
+            <a href="{{ route('class-sections.create') }}" class="btn-add-new">
+                <i class="fas fa-plus-circle"></i>
+                <span>Tạo Lớp học phần mới</span>
+            </a>
+        </div>
+    
+    <!-- Filter Card -->
+    <div class="filter-card">
+        <div class="card-header">
+            <h6 class="mb-0">
+                <i class="fas fa-filter me-2"></i>
+                Bộ lọc tìm kiếm
+            </h6>
+        </div>
+        <div class="card-body">
+            <form action="{{ route('class-sections.index') }}" method="GET">
+                <!-- Row 1 -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label>
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            Năm học
+                        </label>
+                        <input type="text" name="academic_year" class="form-control" 
+                               placeholder="VD: 2024-2025" 
+                               value="{{ $filters['academic_year'] ?? $academicYear }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label>
+                            <i class="fas fa-book me-1"></i>
+                            Học kỳ
+                        </label>
+                        <select name="term" class="form-select">
+                            <option value="">-- Tất cả --</option>
+                            <option value="HK1" {{ ($filters['term'] ?? $term) == 'HK1' ? 'selected' : '' }}>Học kỳ 1</option>
+                            <option value="HK2" {{ ($filters['term'] ?? $term) == 'HK2' ? 'selected' : '' }}>Học kỳ 2</option>
+                            <option value="HE" {{ ($filters['term'] ?? $term) == 'HE' ? 'selected' : '' }}>Học kỳ Hè</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>
+                            <i class="fas fa-building me-1"></i>
+                            Khoa
+                        </label>
+                        <select name="faculty_id" class="form-select">
+                            <option value="">-- Tất cả --</option>
+                            @foreach($faculties as $faculty)
+                                <option value="{{ $faculty->id }}" {{ ($filters['faculty_id'] ?? '') == $faculty->id ? 'selected' : '' }}>
+                                    {{ $faculty->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>
+                            <i class="fas fa-search me-1"></i>
+                            Tìm kiếm
+                        </label>
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Mã lớp, môn học..." 
+                               value="{{ $filters['search'] ?? '' }}">
+                    </div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="row align-items-end">
+                    <div class="col-md-2">
+                        <label>
+                            <i class="fas fa-toggle-on me-1"></i>
+                            Trạng thái
+                        </label>
+                        <select name="status" class="form-select">
+                            <option value="">-- Tất cả --</option>
+                            <option value="active" {{ ($filters['status'] ?? '') == 'active' ? 'selected' : '' }}>✅ Hoạt động</option>
+                            <option value="locked" {{ ($filters['status'] ?? '') == 'locked' ? 'selected' : '' }}>🔒 Tạm khóa</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>
+                            <i class="fas fa-door-open me-1"></i>
+                            Phòng học
+                        </label>
+                        <select name="room_id" class="form-select">
+                            <option value="">-- Tất cả --</option>
+                            @foreach($rooms as $room)
+                                <option value="{{ $room->id }}" {{ ($filters['room_id'] ?? '') == $room->id ? 'selected' : '' }}>
+                                    {{ $room->code }} ({{ $room->building }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label>
+                            <i class="fas fa-clock me-1"></i>
+                            Ca học
+                        </label>
+                        <select name="shift_id" class="form-select">
+                            <option value="">-- Tất cả --</option>
+                            @foreach($shifts as $shift)
+                                <option value="{{ $shift->id }}" {{ ($filters['shift_id'] ?? '') == $shift->id ? 'selected' : '' }}>
+                                    Ca {{ $shift->start_period }}-{{ $shift->end_period }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-check mb-2">
+                            <input type="checkbox" name="unassigned_lecturer" id="unassigned" value="1" 
+                                   {{ ($filters['unassigned_lecturer'] ?? '') == '1' ? 'checked' : '' }} 
+                                   class="form-check-input">
+                            <label for="unassigned" class="form-check-label">
+                                <i class="fas fa-user-slash me-1"></i>
+                                Chỉ hiện lớp chưa phân công GV
+                            </label>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" style="min-width: 120px;">
+                                <i class="fas fa-filter me-1"></i>
+                                Áp dụng lọc
+                            </button>
+                            <a href="{{ route('class-sections.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times-circle me-1"></i>
+                                Xóa lọc
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if(session('warning'))
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ session('warning') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <!-- Data Table -->
+    <div class="data-table-card">
+        <div class="card-header">
+            <h5>
+                <i class="fas fa-table me-2"></i>
+                Danh sách Lớp học phần
+                @if($classSections->count() > 0)
+                    <span class="badge bg-white text-primary ms-2" style="font-size: 14px;">
+                        {{ $classSections->total() }} lớp
+                    </span>
+                @endif
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            @if($classSections->count() > 0)
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">Mã LHP</th>
+                                <th style="width: 18%;">Tên HP</th>
+                                <th style="width: 10%;">Khoa HP</th>
+                                <th style="width: 16%;">Giảng viên</th>
+                                <th style="width: 16%;">Lịch & Phòng</th>
+                                <th style="width: 12%;" class="text-center">Sĩ số</th>
+                                <th style="width: 10%;" class="text-center">Trạng thái</th>
+                                <th style="width: 8%;" class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($classSections as $cs)
+                            @php
+                                $enrolled = $cs->registrations->count();
+                                $capacity = $cs->max_capacity;
+                                $percentage = $capacity > 0 ? ($enrolled / $capacity * 100) : 0;
+                                
+                                if ($percentage >= 90) {
+                                    $capacityClass = 'high';
+                                } elseif ($percentage >= 70) {
+                                    $capacityClass = 'medium';
+                                } else {
+                                    $capacityClass = 'low';
+                                }
+                            @endphp
+                            <tr>
+                                <td>
+                                    <span class="badge-code">
+                                        {{ $cs->course->code ?? 'N/A' }}-{{ $cs->section_code }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong style="color: #1e293b;">{{ $cs->course->name ?? 'N/A' }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge-faculty">
+                                        {{ $cs->course->faculty->code ?? 'N/A' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if($cs->lecturer)
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <i class="fas fa-user-tie" style="color: #10b981;"></i>
+                                            <span>{{ $cs->lecturer->name }}</span>
+                                        </div>
+                                    @else
+                                        <div style="display: flex; align-items: center; gap: 6px; color: #94a3b8;">
+                                            <i class="fas fa-user-slash"></i>
+                                            <em>Chưa phân công</em>
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>
+                                    @php
+                                        $days = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
+                                    @endphp
+                                    <div style="line-height: 1.6;">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <i class="fas fa-calendar-day" style="color: #3b82f6;"></i>
+                                            <strong>{{ $days[$cs->day_of_week] ?? '' }}</strong>
+                                            @if($cs->shift)
+                                                <span style="color: #64748b; font-size: 12px;">
+                                                    (Ca {{ $cs->shift->start_period }}-{{ $cs->shift->end_period }})
+                                                </span>
+                                            @endif
+                                        </div>
+                                        @if($cs->room)
+                                            <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                                <i class="fas fa-door-open" style="color: #06b6d4;"></i>
+                                                <strong>{{ $cs->room->code }}</strong>
+                                            </div>
+                                        @else
+                                            <div style="color: #94a3b8; font-size: 12px; margin-top: 4px;">
+                                                <i class="fas fa-times-circle"></i> Chưa xếp phòng
+                                            </div>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div>
+                                        <span class="badge-capacity {{ $capacityClass }}">
+                                            {{ $enrolled }}/{{ $capacity }}
+                                        </span>
+                                    </div>
+                                    <div class="capacity-progress">
+                                        <div class="capacity-progress-bar {{ $capacityClass }}" 
+                                             style="width: {{ min($percentage, 100) }}%;"></div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    @if($cs->status === 'active')
+                                        <span class="badge-status-active">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            Hoạt động
+                                        </span>
+                                    @else
+                                        <span class="badge-status-locked">
+                                            <i class="fas fa-lock me-1"></i>
+                                            Tạm khóa
+                                        </span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button onclick="viewDetail({{ $cs->id }})" 
+                                                class="btn-action btn-view" 
+                                                title="Xem chi tiết"
+                                                data-bs-toggle="tooltip">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <a href="{{ route('class-sections.edit', $cs->id) }}" 
+                                           class="btn-action btn-edit" 
+                                           title="Chỉnh sửa"
+                                           data-bs-toggle="tooltip">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ route('class-sections.destroy', $cs->id) }}" 
+                                              method="POST" 
+                                              style="display: inline;"
+                                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa lớp {{ $cs->course->code ?? '' }}-{{ $cs->section_code }} không?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" 
+                                                    class="btn-action btn-delete" 
+                                                    title="Xóa"
+                                                    data-bs-toggle="tooltip">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="card-footer" style="background: #f8fafc; padding: 1.25rem 1.5rem; border-top: 2px solid #e2e8f0;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="pagination-info">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Hiển thị <strong>{{ $classSections->firstItem() }}</strong> - <strong>{{ $classSections->lastItem() }}</strong> 
+                            trong tổng số <strong>{{ $classSections->total() }}</strong> lớp học phần
+                        </div>
+                        <div>
+                            {{ $classSections->appends($filters)->links() }}
+                        </div>
+                    </div>
+                </div>
+            @else
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h4>Không tìm thấy lớp học phần nào</h4>
+                    <p>
+                        @if(request()->has('search') || request()->has('faculty_id') || request()->has('status'))
+                            Không có lớp học phần nào phù hợp với bộ lọc của bạn.<br>
+                            Thử điều chỉnh bộ lọc hoặc tạo lớp học phần mới.
+                        @else
+                            Chưa có lớp học phần nào cho <strong>{{ $academicYear }} - {{ $term }}</strong>.<br>
+                            Bắt đầu bằng cách tạo lớp học phần mới.
+                        @endif
+                    </p>
+                    <div>
+                        @if(request()->has('search') || request()->has('faculty_id') || request()->has('status'))
+                            <a href="{{ route('class-sections.index', ['academic_year' => $academicYear, 'term' => $term]) }}" 
+                               class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-times-circle me-2"></i>
+                                Xóa bộ lọc
+                            </a>
+                        @endif
+                        <a href="{{ route('class-sections.create') }}" class="btn-add-new">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Tạo Lớp học phần mới</span>
+                        </a>
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chi tiết -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" style="border: none; border-radius: 12px; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Chi tiết Lớp học phần
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="text-muted mt-3">Đang tải dữ liệu...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section('scripts')
+<script>
+// Initialize tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+function viewDetail(id) {
+    const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+    const body = document.getElementById('detailBody');
+    
+    modal.show();
+    body.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="text-muted mt-3">Đang tải dữ liệu...</p>
+        </div>
+    `;
+    
+    fetch(`/admin/class-sections/${id}/detail`)
+        .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+        })
+        .then(data => {
+            const cs = data.class_section;
+            const students = data.students || [];
+            const logs = data.logs || [];
+            
+            const days = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
+            
+            body.innerHTML = `
+                <!-- Thông tin cơ bản -->
+                <div class="card mb-3" style="border: 2px solid #e2e8f0; border-radius: 10px;">
+                    <div class="card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-bottom: 2px solid #cbd5e1;">
+                        <h6 class="mb-0" style="color: #1e293b; font-weight: 700;">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            Thông tin Lớp học phần
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Mã lớp học phần</label>
+                                <div class="fw-bold fs-5">
+                                    <span class="badge-code">${cs.course?.code || 'N/A'}-${cs.section_code}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Năm học - Học kỳ</label>
+                                <div class="fw-bold">${cs.academic_year} - ${cs.term}</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Môn học</label>
+                                <div class="fw-bold">${cs.course?.name || 'N/A'}</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Khoa</label>
+                                <div>
+                                    <span class="badge-faculty">${cs.course?.faculty?.name || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Giảng viên</label>
+                                <div class="fw-bold">
+                                    ${cs.lecturer ? `<i class="fas fa-user-tie text-success me-1"></i> ${cs.lecturer.name}` : '<em class="text-muted">Chưa phân công</em>'}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Lịch học</label>
+                                <div class="fw-bold">
+                                    <i class="fas fa-calendar-day text-primary me-1"></i>
+                                    ${days[cs.day_of_week] || 'N/A'}
+                                    ${cs.shift ? `(Ca ${cs.shift.start_period}-${cs.shift.end_period})` : ''}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Phòng học</label>
+                                <div class="fw-bold">
+                                    ${cs.room ? `<i class="fas fa-door-open text-info me-1"></i> ${cs.room.code} (${cs.room.building})` : '<em class="text-muted">Chưa xếp phòng</em>'}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="text-muted small">Sĩ số</label>
+                                <div>
+                                    <span class="badge-capacity ${students.length >= cs.max_capacity * 0.9 ? 'high' : students.length >= cs.max_capacity * 0.7 ? 'medium' : 'low'}">
+                                        ${students.length}/${cs.max_capacity}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="text-muted small">Trạng thái</label>
+                                <div>
+                                    ${cs.status === 'active' 
+                                        ? '<span class="badge-status-active"><i class="fas fa-check-circle me-1"></i> Hoạt động</span>' 
+                                        : '<span class="badge-status-locked"><i class="fas fa-lock me-1"></i> Tạm khóa</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Danh sách sinh viên -->
+                <div class="card mb-3" style="border: 2px solid #e2e8f0; border-radius: 10px;">
+                    <div class="card-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
+                        <h6 class="mb-0">
+                            <i class="fas fa-users me-2"></i>
+                            Danh sách Sinh viên đã đăng ký (${students.length})
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        ${students.length > 0 ? `
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover mb-0">
+                                    <thead style="background: #f8fafc;">
+                                        <tr>
+                                            <th width="5%">#</th>
+                                            <th width="15%">MSSV</th>
+                                            <th width="30%">Họ và tên</th>
+                                            <th width="20%">Ngày đăng ký</th>
+                                            <th width="15%">Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${students.map((s, i) => `
+                                            <tr>
+                                                <td>${i + 1}</td>
+                                                <td><strong>${s.student_code}</strong></td>
+                                                <td>${s.name}</td>
+                                                <td>
+                                                    <i class="fas fa-calendar-check text-muted me-1"></i>
+                                                    ${new Date(s.registered_at).toLocaleDateString('vi-VN')}
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-success">Đã đăng ký</span>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : `
+                            <div class="text-center py-4">
+                                <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                                <p class="text-muted mb-0">Chưa có sinh viên nào đăng ký lớp này</p>
+                            </div>
+                        `}
+                    </div>
+                </div>
+                
+                <!-- Lịch sử thao tác -->
+                ${logs.length > 0 ? `
+                    <div class="card" style="border: 2px solid #e2e8f0; border-radius: 10px;">
+                        <div class="card-header" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border: none;">
+                            <h6 class="mb-0">
+                                <i class="fas fa-history me-2"></i>
+                                Lịch sử thao tác
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm mb-0">
+                                    <thead style="background: #f8fafc;">
+                                        <tr>
+                                            <th width="30%">Thời gian</th>
+                                            <th width="20%">Người thực hiện</th>
+                                            <th width="50%">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${logs.map(log => `
+                                            <tr>
+                                                <td>
+                                                    <i class="fas fa-clock text-muted me-1"></i>
+                                                    ${new Date(log.created_at).toLocaleString('vi-VN')}
+                                                </td>
+                                                <td>${log.user_name || 'N/A'}</td>
+                                                <td>${log.action}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        })
+        .catch(err => {
+            body.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Lỗi!</strong> Không thể tải dữ liệu. Vui lòng thử lại sau.
+                </div>
+            `;
+        });
+}
+</script>
+@endsection
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <th width="40%">Mã LHP:</th>
+                                        <td><span class="badge bg-primary">${cs.course.code}-${cs.section_code}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Môn học:</th>
+                                        <td><strong>${cs.course.name}</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Số tín chỉ:</th>
+                                        <td>${cs.course.credits} tín chỉ</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Khoa:</th>
+                                        <td><span class="badge bg-info text-dark">${cs.course.faculty}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Năm học / Học kỳ:</th>
+                                        <td>${cs.academic_year} / ${cs.term}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <th width="40%">Giảng viên:</th>
+                                        <td>${cs.lecturer ? `<i class="fas fa-user-tie text-success me-1"></i>${cs.lecturer.name}<br><small class="text-muted">${cs.lecturer.email}</small>` : '<em class="text-muted">Chưa phân công</em>'}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Lịch học:</th>
+                                        <td><i class="fas fa-calendar-day text-primary me-1"></i>${cs.schedule.day_name} ${cs.schedule.shift ? `(Ca ${cs.schedule.shift.start_period}-${cs.schedule.shift.end_period})` : ''}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Phòng học:</th>
+                                        <td>${cs.room ? `<i class="fas fa-door-open text-warning me-1"></i>${cs.room.code} - ${cs.room.name}<br><small class="text-muted">Tòa ${cs.room.building}, Sức chứa: ${cs.room.capacity}</small>` : 'N/A'}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Sĩ số:</th>
+                                        <td>
+                                            <span class="badge ${cs.current_enrollment >= cs.max_capacity * 0.9 ? 'bg-danger' : (cs.current_enrollment >= cs.max_capacity * 0.7 ? 'bg-warning text-dark' : 'bg-success')}">
+                                                ${cs.current_enrollment} / ${cs.max_capacity}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Trạng thái:</th>
+                                        <td>
+                                            ${cs.status == 'active' ? '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Hoạt động</span>' : '<span class="badge bg-secondary"><i class="fas fa-lock me-1"></i>Tạm khóa</span>'}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Danh sách sinh viên -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-users text-success me-2"></i>
+                            Danh sách Sinh viên đăng ký
+                            <span class="badge bg-primary">${students.length} sinh viên</span>
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        ${students.length > 0 ? `
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="5%">#</th>
+                                            <th width="15%">MSSV</th>
+                                            <th width="35%">Họ và tên</th>
+                                            <th width="20%">Trạng thái ĐK</th>
+                                            <th width="25%">Ngày đăng ký</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${students.map((s, index) => `
+                                            <tr>
+                                                <td>${index + 1}</td>
+                                                <td><strong>${s.student_id}</strong></td>
+                                                <td>${s.name}</td>
+                                                <td><span class="badge bg-success">${s.status}</span></td>
+                                                <td><small class="text-muted"><i class="fas fa-clock me-1"></i>${s.registered_at}</small></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : `
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-user-slash fa-3x mb-3"></i>
+                                <p>Chưa có sinh viên đăng ký lớp này</p>
+                            </div>
+                        `}
+                    </div>
+                </div>
+                
+                <!-- Nhật ký thao tác -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-history text-warning me-2"></i>
+                            Nhật ký thao tác
+                            <span class="badge bg-secondary">${logs.length} bản ghi</span>
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        ${logs.length > 0 ? `
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="25%">Thao tác</th>
+                                            <th width="25%">Người thực hiện</th>
+                                            <th width="20%">Thời gian</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${logs.map(log => `
+                                            <tr>
+                                                <td><span class="badge bg-info">${log.action}</span></td>
+                                                <td><i class="fas fa-user me-1"></i>${log.user}</td>
+                                                <td><small class="text-muted"><i class="fas fa-clock me-1"></i>${log.timestamp}</small></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : `
+                            <div class="text-center py-4 text-muted">
+                                <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                                <p>Chưa có nhật ký thao tác</p>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        })
+        .catch(error => {
+            body.innerHTML = `
+                <div class="alert alert-danger">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Lỗi tải dữ liệu</h5>
+                    <p class="mb-0">Không thể tải thông tin chi tiết. Vui lòng thử lại sau.</p>
+                </div>
+            `;
+            console.error('Error:', error);
+        });
+}
+</script>
+@endsection
