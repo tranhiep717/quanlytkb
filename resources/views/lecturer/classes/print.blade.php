@@ -53,7 +53,7 @@
           </thead>
           <tbody>
             @php $i=1; @endphp
-            @foreach(\App\Models\Registration::where('class_section_id', $classSection->id)->whereIn('status', ['approved','registered'])->with('student')->orderBy('created_at')->get() as $reg)
+            @foreach(\App\Models\Registration::where('class_section_id', $classSection->id)->with('student')->orderBy('created_at')->get() as $reg)
             <tr>
               <td class="text-center">{{ $i++ }}</td>
               <td>{{ $reg->student->code }}</td>

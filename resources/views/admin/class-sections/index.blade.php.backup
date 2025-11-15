@@ -703,6 +703,7 @@
 
 @section('scripts')
 <script>
+const ADMIN_CLASS_SECTIONS_BASE = "{{ url('admin/class-sections') }}";
 // Initialize tooltips
 document.addEventListener('DOMContentLoaded', function() {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -725,7 +726,10 @@ function viewDetail(id) {
         </div>
     `;
     
-    fetch(`/admin/class-sections/${id}/detail`)
+    fetch(`${ADMIN_CLASS_SECTIONS_BASE}/${id}/detail`, {
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    })
         .then(res => {
             if (!res.ok) throw new Error('Network error');
             return res.json();

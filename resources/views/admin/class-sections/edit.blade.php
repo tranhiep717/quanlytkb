@@ -100,9 +100,9 @@
                                 <div>
                                     <i class="fas fa-user-graduate me-2"></i>
                                     @if($classSection->lecturer)
-                                        <strong>{{ $classSection->lecturer->code }} - {{ $classSection->lecturer->name }}</strong>
+                                    <strong>{{ $classSection->lecturer->code }} - {{ $classSection->lecturer->name }}</strong>
                                     @else
-                                        <strong>Chưa phân công</strong>
+                                    <strong>Chưa phân công</strong>
                                     @endif
                                 </div>
                                 <a href="{{ route('class-sections.assignments') }}" class="btn btn-sm btn-outline-light">Quản lý phân công</a>

@@ -174,12 +174,19 @@ Route::prefix('admin')->group(function () {
 
         // S-1: Registration Waves
         Route::get('/registration-waves/offerings', [\App\Http\Controllers\RegistrationWaveController::class, 'offerings'])->name('registration-waves.offerings');
+        Route::post('/registration-waves/bulk-delete', [\App\Http\Controllers\RegistrationWaveController::class, 'bulkDestroy'])->name('registration-waves.bulk-destroy');
         Route::get('/registration-waves/{registrationWave}/detail', [\App\Http\Controllers\RegistrationWaveController::class, 'detail'])->name('registration-waves.detail');
+        Route::get('/registration-waves/trashed', [\App\Http\Controllers\RegistrationWaveController::class, 'trashed'])->name('registration-waves.trashed');
+        Route::post('/registration-waves/{id}/restore', [\App\Http\Controllers\RegistrationWaveController::class, 'restore'])->name('registration-waves.restore');
+        Route::delete('/registration-waves/{id}/force', [\App\Http\Controllers\RegistrationWaveController::class, 'forceDelete'])->name('registration-waves.force-delete');
         Route::resource('registration-waves', \App\Http\Controllers\RegistrationWaveController::class)->except(['show']);
 
         // S-2: Reports
         Route::get('/reports', [AdminController::class, 'reports'])->name('admin.reports');
         Route::get('/reports/export', [AdminController::class, 'exportReport'])->name('admin.reports.export');
+
+        // Content: Announcements management
+        Route::resource('announcements', \App\Http\Controllers\AnnouncementController::class)->except(['show']);
 
         // S-3: Logs
         Route::get('/logs', [AdminController::class, 'logs'])->name('admin.logs');

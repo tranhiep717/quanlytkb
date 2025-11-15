@@ -59,7 +59,7 @@
                     {{ $actionLabels[$log->action] ?? $log->action }}
                 </td>
                 <td style="padding:12px;">
-                    <small style="color:#64748b;font-family:monospace;">{{ $log->metadata ?? '-' }}</small>
+                    <small style="color:#64748b;font-family:monospace;">@json($log->metadata)</small>
                 </td>
             </tr>
             @empty

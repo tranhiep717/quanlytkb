@@ -386,6 +386,7 @@
 
 <script>
     let currentCourseId = null;
+    const ADMIN_COURSES_BASE = "{{ url('admin/courses') }}";
 
     // Hàm xem chi tiết môn học
     function viewCourseDetail(courseId) {
@@ -395,7 +396,7 @@
         document.getElementById('detailModal').style.display = 'flex';
 
         // Load dữ liệu qua AJAX
-        fetch(`/admin/courses/${courseId}/detail`)
+        fetch(`${ADMIN_COURSES_BASE}/${courseId}/detail`)
             .then(res => res.json())
             .then(data => {
                 // Mã môn học
@@ -485,7 +486,7 @@
 
     function editFromDetail() {
         if (currentCourseId) {
-            window.location.href = `/admin/courses/${currentCourseId}/edit`;
+            window.location.href = `${ADMIN_COURSES_BASE}/${currentCourseId}/edit`;
         }
     }
 
@@ -499,11 +500,11 @@
     function openPrerequisitesModal(courseId, courseCode, courseName) {
         document.getElementById('modalCourseCode').textContent = courseCode;
         document.getElementById('modalCourseName').textContent = courseName;
-        document.getElementById('prerequisitesForm').action = `/admin/courses/${courseId}/prerequisites`;
+        document.getElementById('prerequisitesForm').action = `${ADMIN_COURSES_BASE}/${courseId}/prerequisites`;
         document.getElementById('prerequisitesModal').style.display = 'flex';
 
         // Load current prerequisites via AJAX
-        fetch(`/admin/courses/${courseId}/prerequisites`)
+        fetch(`${ADMIN_COURSES_BASE}/${courseId}/prerequisites`)
             .then(res => res.json())
             .then(data => {
                 const select = document.getElementById('prerequisiteSelect');

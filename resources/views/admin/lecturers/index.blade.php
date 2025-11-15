@@ -127,107 +127,115 @@
 
 @section('scripts')
 <script>
-function openLecturerDetail(lecId) {
-    const modal = document.getElementById('lecturerDetailModal');
-    modal.style.display = 'flex';
-    const body = document.getElementById('detailBody');
-    body.innerHTML =
-        '<div style="text-align:center; color:#6b7280; padding:40px;"><div style="font-size:24px; margin-bottom:10px;">⏳</div><div>Đang tải...</div></div>';
+    const ADMIN_LECTURERS_BASE = "{{ url('admin/lecturers') }}";
 
-    fetch(`/admin/lecturers/${lecId}/detail-json`)
-        .then(r => {
-            if (!r.ok) throw new Error('Network error');
-            return r.json();
-        })
-        .then(data => {
-            const lec = data.lecturer || {};
-            const quals = data.qualifications || [];
-            const hist = data.history || [];
-            let html = '';
+    function openLecturerDetail(lecId) {
+        const modal = document.getElementById('lecturerDetailModal');
+        modal.style.display = 'flex';
+        const body = document.getElementById('detailBody');
+        body.innerHTML =
+            '<div style="text-align:center; color:#6b7280; padding:40px;"><div style="font-size:24px; margin-bottom:10px;">⏳</div><div>Đang tải...</div></div>';
 
-            // Profile section
-            html += '<div style="margin-bottom:28px; padding:20px; background:#f8fafc; border-radius:8px;">';
-            html +=
-                '<h4 style="margin:0 0 16px; font-size:17px; font-weight:600; color:#1e293b; border-bottom:2px solid #1976d2; padding-bottom:8px;">👤 Hồ sơ</h4>';
-            html += '<div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">';
-            html +=
-                `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Mã GV:</span> <span style="color:#1e293b;">${lec.code || '-'}</span></div>`;
-            html +=
-                `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Họ tên:</span> <span style="color:#1e293b;">${lec.name || '-'}</span></div>`;
-            html +=
-                `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Email:</span> <span style="color:#1e293b;">${lec.email || '-'}</span></div>`;
-            html +=
-                `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Điện thoại:</span> <span style="color:#1e293b;">${lec.phone || '-'}</span></div>`;
-            html +=
-                `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Khoa:</span> <span style="color:#1e293b;">${lec.faculty || '-'}</span></div>`;
-            html +=
-                `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Học vị:</span> <span style="color:#1e293b;">${lec.degree || '-'}</span></div>`;
-            html += '</div></div>';
+        fetch(`${ADMIN_LECTURERS_BASE}/${lecId}/detail-json`, {
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('Network error');
+                return r.json();
+            })
+            .then(data => {
+                const lec = data.lecturer || {};
+                const quals = data.qualifications || [];
+                const hist = data.history || [];
+                let html = '';
 
-            // Qualifications section
-            html += '<div style="margin-bottom:28px;">';
-            html +=
-                '<h4 style="margin:0 0 16px; font-size:17px; font-weight:600; color:#1e293b; border-bottom:2px solid #10b981; padding-bottom:8px;">📚 Chuyên môn giảng dạy</h4>';
-            if (quals.length === 0) {
+                // Profile section
+                html += '<div style="margin-bottom:28px; padding:20px; background:#f8fafc; border-radius:8px;">';
                 html +=
-                    '<div style="color:#6b7280; font-style:italic; padding:20px; background:#f9fafb; border-radius:6px; text-align:center;">Chưa có thông tin chuyên môn</div>';
-            } else {
-                html += '<div style="overflow-x:auto;">';
-                html += '<table style="width:100%; border-collapse:collapse; border:1px solid #e5e7eb;">';
+                    '<h4 style="margin:0 0 16px; font-size:17px; font-weight:600; color:#1e293b; border-bottom:2px solid #1976d2; padding-bottom:8px;">👤 Hồ sơ</h4>';
+                html += '<div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">';
                 html +=
-                    '<thead><tr style="background:#f0fdf4;"><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#166534;">Mã HP</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#166534;">Tên học phần</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#166534;">Trình độ</th></tr></thead>';
-                html += '<tbody>';
-                quals.forEach((q, idx) => {
-                    const bg = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
+                    `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Mã GV:</span> <span style="color:#1e293b;">${lec.code || '-'}</span></div>`;
+                html +=
+                    `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Họ tên:</span> <span style="color:#1e293b;">${lec.name || '-'}</span></div>`;
+                html +=
+                    `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Email:</span> <span style="color:#1e293b;">${lec.email || '-'}</span></div>`;
+                html +=
+                    `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Điện thoại:</span> <span style="color:#1e293b;">${lec.phone || '-'}</span></div>`;
+                html +=
+                    `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Khoa:</span> <span style="color:#1e293b;">${lec.faculty || '-'}</span></div>`;
+                html +=
+                    `<div style="padding:8px; background:white; border-radius:4px;"><span style="font-weight:600; color:#475569;">Học vị:</span> <span style="color:#1e293b;">${lec.degree || '-'}</span></div>`;
+                html += '</div></div>';
+
+                // Qualifications section
+                html += '<div style="margin-bottom:28px;">';
+                html +=
+                    '<h4 style="margin:0 0 16px; font-size:17px; font-weight:600; color:#1e293b; border-bottom:2px solid #10b981; padding-bottom:8px;">📚 Chuyên môn giảng dạy</h4>';
+                if (quals.length === 0) {
                     html +=
-                        `<tr style="background:${bg};"><td style="padding:10px; border:1px solid #e5e7eb;">${q.course_code || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${q.course_name || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${q.level || '-'}</td></tr>`;
-                });
-                html += '</tbody></table>';
-                html += '</div>';
-            }
-            html += '</div>';
-
-            // Teaching history section
-            html += '<div>';
-            html +=
-                '<h4 style="margin:0 0 16px; font-size:17px; font-weight:600; color:#1e293b; border-bottom:2px solid #f59e0b; padding-bottom:8px;">📖 Lịch sử giảng dạy (10 lớp gần nhất)</h4>';
-            if (hist.length === 0) {
-                html +=
-                    '<div style="color:#6b7280; font-style:italic; padding:20px; background:#f9fafb; border-radius:6px; text-align:center;">Chưa có lịch sử giảng dạy</div>';
-            } else {
-                html += '<div style="overflow-x:auto;">';
-                html +=
-                    '<table style="width:100%; border-collapse:collapse; border:1px solid #e5e7eb; font-size:14px;">';
-                html +=
-                    '<thead><tr style="background:#fffbeb;"><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Năm học</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Học kỳ</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Học phần</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Lớp</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Phòng</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Thứ</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Ca</th></tr></thead>';
-                html += '<tbody>';
-                hist.forEach((h, idx) => {
-                    const bg = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
+                        '<div style="color:#6b7280; font-style:italic; padding:20px; background:#f9fafb; border-radius:6px; text-align:center;">Chưa có thông tin chuyên môn</div>';
+                } else {
+                    html += '<div style="overflow-x:auto;">';
+                    html += '<table style="width:100%; border-collapse:collapse; border:1px solid #e5e7eb;">';
                     html +=
-                        `<tr style="background:${bg};"><td style="padding:10px; border:1px solid #e5e7eb;">${h.academic_year || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.term || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.course || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.section || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.room || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.day || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.shift || '-'}</td></tr>`;
-                });
-                html += '</tbody></table>';
+                        '<thead><tr style="background:#f0fdf4;"><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#166534;">Mã HP</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#166534;">Tên học phần</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#166534;">Trình độ</th></tr></thead>';
+                    html += '<tbody>';
+                    quals.forEach((q, idx) => {
+                        const bg = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
+                        html +=
+                            `<tr style="background:${bg};"><td style="padding:10px; border:1px solid #e5e7eb;">${q.course_code || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${q.course_name || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${q.level || '-'}</td></tr>`;
+                    });
+                    html += '</tbody></table>';
+                    html += '</div>';
+                }
                 html += '</div>';
-            }
-            html += '</div>';
 
-            body.innerHTML = html;
-        })
-        .catch(() => {
-            body.innerHTML =
-                '<div style="text-align:center; color:#dc2626; padding:40px;"><div style="font-size:24px; margin-bottom:10px;">❌</div><div style="font-weight:600;">Không thể tải thông tin giảng viên</div><div style="margin-top:8px; color:#6b7280; font-size:14px;">Vui lòng thử lại sau</div></div>';
-        });
-}
+                // Teaching history section
+                html += '<div>';
+                html +=
+                    '<h4 style="margin:0 0 16px; font-size:17px; font-weight:600; color:#1e293b; border-bottom:2px solid #f59e0b; padding-bottom:8px;">📖 Lịch sử giảng dạy (10 lớp gần nhất)</h4>';
+                if (hist.length === 0) {
+                    html +=
+                        '<div style="color:#6b7280; font-style:italic; padding:20px; background:#f9fafb; border-radius:6px; text-align:center;">Chưa có lịch sử giảng dạy</div>';
+                } else {
+                    html += '<div style="overflow-x:auto;">';
+                    html +=
+                        '<table style="width:100%; border-collapse:collapse; border:1px solid #e5e7eb; font-size:14px;">';
+                    html +=
+                        '<thead><tr style="background:#fffbeb;"><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Năm học</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Học kỳ</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Học phần</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Lớp</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Phòng</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Thứ</th><th style="padding:10px; text-align:left; border:1px solid #e5e7eb; font-weight:600; color:#92400e;">Ca</th></tr></thead>';
+                    html += '<tbody>';
+                    hist.forEach((h, idx) => {
+                        const bg = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
+                        html +=
+                            `<tr style="background:${bg};"><td style="padding:10px; border:1px solid #e5e7eb;">${h.academic_year || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.term || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.course || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.section || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.room || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.day || '-'}</td><td style="padding:10px; border:1px solid #e5e7eb;">${h.shift || '-'}</td></tr>`;
+                    });
+                    html += '</tbody></table>';
+                    html += '</div>';
+                }
+                html += '</div>';
 
-function closeDetailModal() {
-    document.getElementById('lecturerDetailModal').style.display = 'none';
-}
-
-// Close modal when clicking outside
-document.getElementById('lecturerDetailModal')?.addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeDetailModal();
+                body.innerHTML = html;
+            })
+            .catch(() => {
+                body.innerHTML =
+                    '<div style="text-align:center; color:#dc2626; padding:40px;"><div style="font-size:24px; margin-bottom:10px;">❌</div><div style="font-weight:600;">Không thể tải thông tin giảng viên</div><div style="margin-top:8px; color:#6b7280; font-size:14px;">Vui lòng thử lại sau</div></div>';
+            });
     }
-});
+
+    function closeDetailModal() {
+        document.getElementById('lecturerDetailModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('lecturerDetailModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDetailModal();
+        }
+    });
 </script>
 @endsection

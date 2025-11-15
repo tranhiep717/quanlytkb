@@ -500,12 +500,13 @@
 
 <?php $__env->startSection('scripts'); ?>
 <script>
+    const ADMIN_ROOMS_BASE = "<?php echo e(url('admin/rooms')); ?>";
     let currentRoomId = null;
 
     function viewRoomDetail(roomId) {
         currentRoomId = roomId;
         document.getElementById('detailModal').style.display = 'flex';
-        fetch('/admin/rooms/' + roomId + '/detail')
+        fetch(ADMIN_ROOMS_BASE + '/' + roomId + '/detail')
             .then(res => res.json())
             .then(data => {
                 document.getElementById('detailCode').textContent = data.code;
@@ -554,7 +555,7 @@
 
     function editFromDetail() {
         if (currentRoomId) {
-            window.location.href = '/admin/rooms/' + currentRoomId + '/edit';
+            window.location.href = ADMIN_ROOMS_BASE + '/' + currentRoomId + '/edit';
         }
     }
 
@@ -565,16 +566,13 @@
     });
 
     <?php if(session('error')): ?>
-    showToast('error', 'Lỗi', '<?php echo e(session('
-        error ')); ?>');
+    showToast('error', 'Lỗi', <?php echo json_encode(session('error'), 15, 512) ?>);
     <?php endif; ?>
     <?php if(session('success')): ?>
-    showToast('success', 'Thành công', '<?php echo e(session('
-        success ')); ?>');
+    showToast('success', 'Thành công', <?php echo json_encode(session('success'), 15, 512) ?>);
     <?php endif; ?>
     <?php if(session('warning')): ?>
-    showToast('warning', 'Cảnh báo', '<?php echo e(session('
-        warning ')); ?>');
+    showToast('warning', 'Cảnh báo', <?php echo json_encode(session('warning'), 15, 512) ?>);
     <?php endif; ?>
 
     function showToast(type, title, message) {

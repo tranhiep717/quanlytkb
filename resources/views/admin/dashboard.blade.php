@@ -254,13 +254,9 @@ return \App\Models\User::where('role', 'student')->where('faculty_id', $f->id)->
     new Chart(facultyCtx, {
         type: 'doughnut',
         data: {
-            labels: {
-                !!$facultyLabels->toJson() !!
-            },
+            labels: {!! $facultyLabels->toJson() !!},
             datasets: [{
-                data: {
-                    !!$facultyData->toJson() !!
-                },
+                data: {!! $facultyData->toJson() !!},
                 backgroundColor: ['#1976d2', '#16a34a', '#9333ea', '#f59e0b', '#ef4444', '#06b6d4', '#ec4899']
             }]
         },

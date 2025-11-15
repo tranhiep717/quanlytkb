@@ -52,7 +52,13 @@
 
         <div style="margin-bottom:16px;">
             <label style="display:block;margin-bottom:4px;color:#94a3b8;font-size:13px;">Khóa học (chỉ dành cho sinh viên)</label>
-            <input type="text" name="class_cohort" value="{{ old('class_cohort') }}" placeholder="VD: K17" style="width:100%;">
+            <select name="class_cohort" style="width:100%;">
+                <option value="">-- Chọn khóa học --</option>
+                @foreach($cohorts as $cohort)
+                <option value="{{ $cohort }}" {{ old('class_cohort') === $cohort ? 'selected' : '' }}>{{ $cohort }}</option>
+                @endforeach
+            </select>
+            <div style="color:#64748b;font-size:12px;margin-top:4px;">Nếu khóa học chưa có trong danh sách, hãy tạo sinh viên khóa đó trước</div>
             @error('class_cohort')<div style="color:#ef4444;font-size:12px;margin-top:4px;">{{ $message }}</div>@enderror
         </div>
 

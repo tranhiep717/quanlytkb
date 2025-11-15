@@ -498,12 +498,19 @@
 
 @section('scripts')
 <script>
+    const ADMIN_ROOMS_BASE = "{{ url('admin/rooms') }}";
     let currentRoomId = null;
 
     function viewRoomDetail(roomId) {
         currentRoomId = roomId;
         document.getElementById('detailModal').style.display = 'flex';
-        fetch('/admin/rooms/' + roomId + '/detail')
+        fetch(ADMIN_ROOMS_BASE + '/' + roomId + '/detail', {
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
             .then(res => res.json())
             .then(data => {
                 document.getElementById('detailCode').textContent = data.code;
@@ -552,7 +559,7 @@
 
     function editFromDetail() {
         if (currentRoomId) {
-            window.location.href = '/admin/rooms/' + currentRoomId + '/edit';
+            window.location.href = ADMIN_ROOMS_BASE + '/' + currentRoomId + '/edit';
         }
     }
 
@@ -562,15 +569,12 @@
         }
     });
 
-    @if(session('error'))
-    showToast('error', 'Lỗi', '{{ session('error') }}');
-    @endif
-    @if(session('success'))
-    showToast('success', 'Thành công', '{{ session('success') }}');
-    @endif
-    @if(session('warning'))
-    showToast('warning', 'Cảnh báo', '{{ session('warning') }}');
-    @endif
+    const sesErr = @json(session('error'));
+    const sesOk = @json(session('success'));
+    const sesWarn = @json(session('warning'));
+    if (sesErr) showToast('error', 'Lỗi', sesErr);
+    if (sesOk) showToast('success', 'Thành công', sesOk);
+    if (sesWarn) showToast('warning', 'Cảnh báo', sesWarn);
 
     function showToast(type, title, message) {
         const container = document.getElementById('toastContainer');

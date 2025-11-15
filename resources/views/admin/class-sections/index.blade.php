@@ -35,14 +35,14 @@
             {{ !empty($assignmentMode) && $assignmentMode ? 'Phân công giảng viên' : 'Quản lý Lớp học phần' }}
         </h2>
         @unless(!empty($assignmentMode) && $assignmentMode)
-            <a href="{{ route('class-sections.create') }}"
-                style="background:#16a34a; color:white; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:500; display:inline-flex; align-items:center; gap:8px;">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path
-                        d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-                </svg>
-                Thêm Lớp học phần
-            </a>
+        <a href="{{ route('class-sections.create') }}"
+            style="background:#16a34a; color:white; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:500; display:inline-flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path
+                    d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+            </svg>
+            Thêm Lớp học phần
+        </a>
         @endunless
     </div>
 
@@ -68,7 +68,7 @@
     <!-- Filters -->
     <form action="{{ route('class-sections.index') }}" method="GET" style="margin-bottom:20px;">
         @if(!empty($assignmentMode) && $assignmentMode)
-            <input type="hidden" name="mode" value="assign" />
+        <input type="hidden" name="mode" value="assign" />
         @endif
         <!-- Row 1 -->
         <div style="display:flex; gap:12px; margin-bottom:12px; align-items:end;">
@@ -77,11 +77,11 @@
                 <select name="academic_year" style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
                     @php $selectedYear = $filters['academic_year'] ?? $academicYear; @endphp
                     @if(!empty($academicYears) && count($academicYears))
-                        @foreach($academicYears as $year)
-                            <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>{{ $year }}</option>
-                        @endforeach
+                    @foreach($academicYears as $year)
+                    <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>{{ $year }}</option>
+                    @endforeach
                     @else
-                        <option value="{{ $selectedYear }}" selected>{{ $selectedYear }}</option>
+                    <option value="{{ $selectedYear }}" selected>{{ $selectedYear }}</option>
                     @endif
                 </select>
             </div>
@@ -267,49 +267,49 @@
                                 </svg>
                             </button>
                             @if(!empty($assignmentMode) && $assignmentMode)
-                                {{-- UC2.8 mode: only assignment actions --}}
-                                @if(!$cs->lecturer)
-                                    <button onclick="openAssignModal({{ $cs->id }})" class="action-btn"
-                                        style="background:#16a34a; color:white; border:none; cursor:pointer;" title="Phân công">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M10,17V14H3V10H10V7L15,12L10,17M19,3H5C3.89,3 3,3.89 3,5V8H5V5H19V19H5V16H3V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3Z" />
-                                        </svg>
-                                    </button>
-                                @else
-                                    <button onclick="openAssignModal({{ $cs->id }})" class="action-btn"
-                                        style="background:#1976d2; color:white; border:none; cursor:pointer;" title="Đổi giảng viên">
-                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5z"/>
-                                        </svg>
-                                    </button>
-                                    <button onclick="unassignLecturer({{ $cs->id }})" class="action-btn"
-                                        style="background:#dc2626; color:white; border:none; cursor:pointer;" title="Thu hồi phân công">
-                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1z"/>
-                                        </svg>
-                                    </button>
-                                @endif
+                            {{-- UC2.8 mode: only assignment actions --}}
+                            @if(!$cs->lecturer)
+                            <button onclick="openAssignModal({{ $cs->id }})" class="action-btn"
+                                style="background:#16a34a; color:white; border:none; cursor:pointer;" title="Phân công">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M10,17V14H3V10H10V7L15,12L10,17M19,3H5C3.89,3 3,3.89 3,5V8H5V5H19V19H5V16H3V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3Z" />
+                                </svg>
+                            </button>
                             @else
-                                {{-- Normal mode: show full UC2.7 actions --}}
-                                <a href="{{ route('class-sections.edit', $cs) }}" class="action-btn"
-                                    style="background:#1976d2; color:white; text-decoration:none;" title="Sửa">
+                            <button onclick="openAssignModal({{ $cs->id }})" class="action-btn"
+                                style="background:#1976d2; color:white; border:none; cursor:pointer;" title="Đổi giảng viên">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5z" />
+                                </svg>
+                            </button>
+                            <button onclick="unassignLecturer({{ $cs->id }})" class="action-btn"
+                                style="background:#dc2626; color:white; border:none; cursor:pointer;" title="Thu hồi phân công">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1z" />
+                                </svg>
+                            </button>
+                            @endif
+                            @else
+                            {{-- Normal mode: show full UC2.7 actions --}}
+                            <a href="{{ route('class-sections.edit', $cs) }}" class="action-btn"
+                                style="background:#1976d2; color:white; text-decoration:none;" title="Sửa">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path
+                                        d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z" />
+                                </svg>
+                            </a>
+                            <form action="{{ route('class-sections.destroy', $cs) }}" method="POST" style="display:inline;"
+                                onsubmit="return confirm('Xác nhận xóa lớp {{ $cs->course->code ?? '' }}-{{ $cs->section_code }}?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="action-btn" style="background:#dc2626; color:white; border:none; cursor:pointer;" title="Xóa">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path
-                                            d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z" />
+                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1z" />
                                     </svg>
-                                </a>
-                                <form action="{{ route('class-sections.destroy', $cs) }}" method="POST" style="display:inline;"
-                                    onsubmit="return confirm('Xác nhận xóa lớp {{ $cs->course->code ?? '' }}-{{ $cs->section_code }}?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="action-btn" style="background:#dc2626; color:white; border:none; cursor:pointer;" title="Xóa">
-                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-                                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1z" />
-                                        </svg>
-                                    </button>
-                                </form>
+                                </button>
+                            </form>
                             @endif
                         </div>
                     </td>
@@ -417,15 +417,79 @@
 
 <script>
     // Provide faculties list for Assign modal filter
-    const FACULTIES = @json(($faculties ?? collect())->map(fn($f) => ['id' => $f->id, 'name' => $f->name])->values());
+    const FACULTIES = @json(($faculties ?? collect())->map(function($f) {
+        return ['id' => $f->id, 'name' => $f->name];
+    })->values());
+    // Absolute base URL for admin class-section APIs (works with subfolder deployments like /quanlytkbieu/public)
+    const ADMIN_CLASS_SECTIONS_BASE = "{{ url('admin/class-sections') }}";
+
+    // CSRF helpers and unified fetch wrapper
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return undefined;
+    }
+
+    async function apiFetch(input, init = {}) {
+        const headers = new Headers(init.headers || {});
+        headers.set('Accept', 'application/json');
+        headers.set('X-Requested-With', 'XMLHttpRequest');
+        // Prefer meta token; fall back to XSRF-TOKEN cookie
+        try {
+            const metaToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            if (metaToken) headers.set('X-CSRF-TOKEN', metaToken);
+        } catch (e) {}
+        const xsrfCookie = getCookie('XSRF-TOKEN');
+        if (xsrfCookie) headers.set('X-XSRF-TOKEN', decodeURIComponent(xsrfCookie));
+
+        const res = await fetch(input, {
+            credentials: 'same-origin',
+            ...init,
+            headers,
+        });
+
+        const contentType = res.headers.get('content-type') || '';
+        const isJson = contentType.includes('application/json');
+        const payload = isJson ? await res.json().catch(() => ({})) : await res.text();
+
+        if (!res.ok) {
+            // Laravel common cases: 419 Page Expired, 401/403 unauthorized
+            if (res.status === 419) {
+                throw {
+                    status: 419,
+                    code: 'CSRF',
+                    message: 'Phiên đăng nhập đã hết hạn (419). Vui lòng tải lại trang.'
+                };
+            }
+            if (res.status === 401 || res.status === 403) {
+                throw {
+                    status: res.status,
+                    code: 'UNAUTHORIZED',
+                    message: 'Phiên đăng nhập không hợp lệ hoặc thiếu quyền. Vui lòng đăng nhập lại.'
+                };
+            }
+            if (isJson && payload && payload.message) {
+                throw payload;
+            }
+            throw {
+                status: res.status,
+                message: typeof payload === 'string' ? payload : 'Yêu cầu thất bại.'
+            };
+        }
+
+        return isJson ? payload : {
+            ok: true,
+            html: payload
+        };
+    }
 
     function viewDetail(id) {
         const modal = document.getElementById('detailModal');
         const body = document.getElementById('detailBody');
         modal.style.display = 'flex';
         body.innerHTML = 'Đang tải dữ liệu...';
-        fetch('/admin/class-sections/' + id + '/detail')
-            .then(res => res.json())
+        apiFetch(`${ADMIN_CLASS_SECTIONS_BASE}/${id}/detail`)
             .then(data => {
                 const cs = data.class_section;
                 const students = data.students || [];
@@ -450,8 +514,9 @@
         <div style="margin-top:20px; text-align:right;"><button onclick="closeDetailModal()" style="padding:10px 24px; border:1px solid #cbd5e0; border-radius:6px; background:white; color:#475569; cursor:pointer;">Đóng</button></div>
       `;
             })
-            .catch(() => {
-                body.innerHTML = '<p style="color:#dc2626;">Không thể tải dữ liệu</p>';
+            .catch((e) => {
+                const msg = (e && e.message) ? e.message : 'Không thể tải dữ liệu';
+                body.innerHTML = `<p style="color:#dc2626;">${msg}</p>`;
             });
     }
 
@@ -467,24 +532,41 @@
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     function openAssignModal(sectionId) {
+        // Open modal immediately with loading placeholders so users see feedback even if fetch fails
+        const modal = document.getElementById('assignModal');
+        const header = document.getElementById('assignHeader');
+        const tbody = document.getElementById('candidatesBody');
+        const alertBox = document.getElementById('assignAlert');
+        const submitBtn = document.getElementById('assignSubmit');
+
+        modal.style.display = 'flex';
+        header.style.display = 'block';
+        header.innerHTML = '<div style="color:#6b7280;">Đang tải thông tin lớp học phần...</div>';
+        tbody.innerHTML = '<tr><td colspan="5" style="padding:12px; text-align:center; color:#6b7280;">Đang tải...</td></tr>';
+        alertBox.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.style.cursor = 'not-allowed';
+        submitBtn.style.background = '#9ca3af';
+
         // Keep some context by reading row dataset via a small detail fetch
-        fetch(`/admin/class-sections/${sectionId}/detail`).then(r => r.json()).then(data => {
-            const cs = data.class_section;
-            document.getElementById('assignSectionId').value = sectionId;
-            document.getElementById('assignCourseFaculty').value = cs.course?.faculty ? cs.course.faculty.name : '';
-            document.getElementById('assignYear').value = cs.academic_year;
-            document.getElementById('assignTerm').value = cs.term;
-            document.getElementById('assignShift').value = cs.shift ? cs.shift.start_period + "-" + cs.shift.end_period : '';
-            document.getElementById('assignDOW').value = cs.day_of_week;
-            document.getElementById('assignHasLecturer').value = cs.lecturer ? '1' : '0';
-            // Default filters
-            document.getElementById('onlySameFaculty').checked = true;
-            document.getElementById('onlyFree').checked = true;
-            // Header info
-            const header = document.getElementById('assignHeader');
-            const days = ['', 'Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7','CN'];
-            header.style.display = 'block';
-            header.innerHTML = `
+        apiFetch(`${ADMIN_CLASS_SECTIONS_BASE}/${sectionId}/detail`)
+            .then(data => {
+                const cs = data.class_section;
+                document.getElementById('assignSectionId').value = sectionId;
+                document.getElementById('assignCourseFaculty').value = cs.course?.faculty ? cs.course.faculty.name : '';
+                document.getElementById('assignYear').value = cs.academic_year;
+                document.getElementById('assignTerm').value = cs.term;
+                document.getElementById('assignShift').value = cs.shift ? cs.shift.start_period + "-" + cs.shift.end_period : '';
+                document.getElementById('assignDOW').value = cs.day_of_week;
+                document.getElementById('assignHasLecturer').value = cs.lecturer ? '1' : '0';
+                // Default filters
+                document.getElementById('onlySameFaculty').checked = true;
+                document.getElementById('onlyFree').checked = true;
+                // Header info
+                const header = document.getElementById('assignHeader');
+                const days = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
+                header.style.display = 'block';
+                header.innerHTML = `
                 <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
                     <div>
                         <div style="font-size:12px; color:#6b7280;">Lớp học phần</div>
@@ -499,37 +581,41 @@
                         <div>${cs.lecturer? (cs.lecturer.name) : '<em>Chưa phân công</em>'}</div>
                     </div>
                 </div>`;
-            // Reason field visibility
-            document.getElementById('assignReasonWrap').style.display = cs.lecturer ? 'block' : 'none';
-            document.getElementById('assignReason').value = '';
-            // Reset selection
-            document.getElementById('assignSelectedLecturerId').value = '';
-            const submitBtn = document.getElementById('assignSubmit');
-            submitBtn.disabled = true;
-            submitBtn.style.cursor = 'not-allowed';
-            submitBtn.style.background = '#9ca3af';
-            submitBtn.textContent = cs.lecturer ? 'Xác nhận đổi giảng viên' : 'Xác nhận phân công';
+                // Reason field visibility
+                document.getElementById('assignReasonWrap').style.display = cs.lecturer ? 'block' : 'none';
+                document.getElementById('assignReason').value = '';
+                // Reset selection
+                document.getElementById('assignSelectedLecturerId').value = '';
+                const submitBtn = document.getElementById('assignSubmit');
+                submitBtn.disabled = true;
+                submitBtn.style.cursor = 'not-allowed';
+                submitBtn.style.background = '#9ca3af';
+                submitBtn.textContent = cs.lecturer ? 'Xác nhận đổi giảng viên' : 'Xác nhận phân công';
 
-            // Populate faculty filter from FACULTIES; default to course's faculty
-            const facultySelect = document.getElementById('assignFaculty');
-            facultySelect.innerHTML = '';
-            const optAll = document.createElement('option');
-            optAll.value = '';
-            optAll.textContent = '-- Tất cả --';
-            facultySelect.appendChild(optAll);
-            FACULTIES.forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f.id;
-                opt.textContent = f.name;
-                facultySelect.appendChild(opt);
+                // Populate faculty filter from FACULTIES; default to course's faculty
+                const facultySelect = document.getElementById('assignFaculty');
+                facultySelect.innerHTML = '';
+                const optAll = document.createElement('option');
+                optAll.value = '';
+                optAll.textContent = '-- Tất cả --';
+                facultySelect.appendChild(optAll);
+                FACULTIES.forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.id;
+                    opt.textContent = f.name;
+                    facultySelect.appendChild(opt);
+                });
+                if (cs.course?.faculty_id) {
+                    facultySelect.value = String(cs.course.faculty_id);
+                }
+
+                loadCandidates();
+            }).catch((e) => {
+                alertBox.style.display = 'block';
+                alertBox.style.background = '#fee2e2';
+                alertBox.style.color = '#991b1b';
+                alertBox.textContent = (e && e.message) ? e.message : 'Không thể mở modal phân công.';
             });
-            if (cs.course?.faculty_id) {
-                facultySelect.value = String(cs.course.faculty_id);
-            }
-
-            document.getElementById('assignModal').style.display = 'flex';
-            loadCandidates();
-        });
     }
 
     function closeAssignModal() {
@@ -540,43 +626,44 @@
         const sectionId = document.getElementById('assignSectionId').value;
         const q = document.getElementById('assignSearch').value.trim();
         const facultyId = document.getElementById('assignFaculty').value;
-    const url = new URL(window.location.origin + `/admin/class-sections/${sectionId}/lecturer-candidates`);
+        const url = new URL(`${ADMIN_CLASS_SECTIONS_BASE}/${sectionId}/lecturer-candidates`);
         if (q) url.searchParams.set('q', q);
-    const onlySame = document.getElementById('onlySameFaculty').checked;
-    if (facultyId) url.searchParams.set('faculty_id', facultyId);
+        const onlySame = document.getElementById('onlySameFaculty').checked;
+        if (facultyId) url.searchParams.set('faculty_id', facultyId);
 
         const tbody = document.getElementById('candidatesBody');
         tbody.innerHTML = '<tr><td colspan="5" style="padding:12px; text-align:center; color:#6b7280;">Đang tải...</td></tr>';
 
-        fetch(url).then(r => r.json()).then(data => {
-            const items = data.candidates || [];
-            const filtered = items.filter(c => {
-                if (document.getElementById('onlyFree').checked && c.has_conflict) return false;
-                if (onlySame && !c.qualified) return false;
-                return true;
-            });
-            if (!filtered.length) {
-                tbody.innerHTML = '<tr><td colspan="5" style="padding:20px; text-align:center; color:#9ca3af;">Không có giảng viên phù hợp</td></tr>';
-                return;
-            }
-            tbody.innerHTML = filtered.map(c => {
-                const statusBadges = [];
-                if (c.has_conflict) statusBadges.push('<span style="background:#fee2e2;color:#991b1b;padding:4px 8px;border-radius:999px;font-size:12px;">Trùng ca</span>');
-                if (!c.qualified) statusBadges.push('<span style="background:#fef3c7;color:#92400e;padding:4px 8px;border-radius:999px;font-size:12px;">Khác khoa</span>');
-                if (c.current_load >= c.max_load) statusBadges.push('<span style="background:#fee2e2;color:#991b1b;padding:4px 8px;border-radius:999px;font-size:12px;">Quá tải</span>');
-                const disabled = c.has_conflict || (c.current_load >= c.max_load);
-                const btnLabel = 'Chọn';
-                return `<tr style="border-top:1px solid #e5e7eb;">
+        apiFetch(url)
+            .then(data => {
+                const items = data.candidates || [];
+                const filtered = items.filter(c => {
+                    if (document.getElementById('onlyFree').checked && c.has_conflict) return false;
+                    if (onlySame && !c.qualified) return false;
+                    return true;
+                });
+                if (!filtered.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding:20px; text-align:center; color:#9ca3af;">Không có giảng viên phù hợp</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = filtered.map(c => {
+                    const statusBadges = [];
+                    if (c.has_conflict) statusBadges.push('<span style="background:#fee2e2;color:#991b1b;padding:4px 8px;border-radius:999px;font-size:12px;">Trùng ca</span>');
+                    if (!c.qualified) statusBadges.push('<span style="background:#fef3c7;color:#92400e;padding:4px 8px;border-radius:999px;font-size:12px;">Khác khoa</span>');
+                    if (c.current_load >= c.max_load) statusBadges.push('<span style="background:#fee2e2;color:#991b1b;padding:4px 8px;border-radius:999px;font-size:12px;">Quá tải</span>');
+                    const disabled = c.has_conflict || (c.current_load >= c.max_load);
+                    const btnLabel = 'Chọn';
+                    return `<tr style="border-top:1px solid #e5e7eb;">
                     <td style="padding:10px;">${c.name}<div style="font-size:12px;color:#6b7280;">${c.email||''}</div></td>
                     <td style="padding:10px;">${c.faculty||''}</td>
                     <td style="padding:10px; text-align:center;">${c.current_load}/${c.max_load}</td>
                     <td style="padding:10px; text-align:center; display:flex; gap:6px; justify-content:center;">${statusBadges.join(' ')||'<span style="color:#16a34a;">Hợp lệ</span>'}</td>
                     <td style="padding:10px; text-align:center;"><button ${disabled?'disabled':''} onclick="selectCandidate(${c.id}, this)" style="padding:6px 12px; border:none; border-radius:6px; background:${disabled?'#9ca3af':'#2563eb'}; color:#fff; cursor:${disabled?'not-allowed':'pointer'};">${btnLabel}</button></td>
                 </tr>`;
-            }).join('');
-        }).catch(() => {
-            tbody.innerHTML = '<tr><td colspan="5" style="padding:20px; text-align:center; color:#dc2626;">Lỗi tải danh sách</td></tr>';
-        });
+                }).join('');
+            }).catch((e) => {
+                tbody.innerHTML = `<tr><td colspan="5" style="padding:20px; text-align:center; color:#dc2626;">Lỗi tải danh sách (${e?.message||'Unknown'})</td></tr>`;
+            });
     }
 
     document.getElementById('assignRefresh').addEventListener('click', function() {
@@ -600,11 +687,13 @@
         submitBtn.style.cursor = 'pointer';
         submitBtn.style.background = '#16a34a';
         // Visual feedback
-        Array.from(document.querySelectorAll('#candidatesBody button')).forEach(b => { if (b !== btn) b.textContent = 'Chọn'; });
+        Array.from(document.querySelectorAll('#candidatesBody button')).forEach(b => {
+            if (b !== btn) b.textContent = 'Chọn';
+        });
         btn.textContent = 'Đã chọn';
     }
 
-    document.getElementById('assignSubmit').addEventListener('click', function(){
+    document.getElementById('assignSubmit').addEventListener('click', function() {
         const lecturerId = document.getElementById('assignSelectedLecturerId').value;
         if (!lecturerId) return;
         const sectionId = document.getElementById('assignSectionId').value;
@@ -618,21 +707,17 @@
             alertBox.textContent = 'Vui lòng nhập lý do thay đổi giảng viên.';
             return;
         }
-        fetch(`/admin/class-sections/${sectionId}/assign-lecturer`, {
+        apiFetch(`${ADMIN_CLASS_SECTIONS_BASE}/${sectionId}/assign-lecturer`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     lecturer_id: Number(lecturerId),
                     note: note
                 })
             })
-            .then(async res => {
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok) throw data;
+            .then(data => {
                 const alert = document.getElementById('assignAlert');
                 alert.style.display = 'block';
                 alert.style.background = data.pending ? '#fef3c7' : '#d1fae5';
@@ -649,22 +734,19 @@
                 alert.style.display = 'block';
                 alert.style.background = '#fee2e2';
                 alert.style.color = '#991b1b';
-                alert.textContent = (err && err.message) ? err.message : 'Không thể phân công. Vui lòng thử lại.';
+                let msg = 'Không thể phân công. Vui lòng thử lại.';
+                if (err && err.message) msg = err.message;
+                if (err && err.code) msg += ` (Mã: ${err.code})`;
+                alert.textContent = msg;
             });
     });
 
     function unassignLecturer(sectionId) {
         if (!confirm('Thu hồi phân công giảng viên?')) return;
-        fetch(`/admin/class-sections/${sectionId}/unassign-lecturer`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
-                }
+        apiFetch(`${ADMIN_CLASS_SECTIONS_BASE}/${sectionId}/unassign-lecturer`, {
+                method: 'DELETE'
             })
-            .then(async res => {
-                const data = await res.json().catch(() => ({}));
-                if (!res.ok) throw data;
+            .then(data => {
                 alert(data.message || 'Đã thu hồi.');
                 window.location.reload();
             })

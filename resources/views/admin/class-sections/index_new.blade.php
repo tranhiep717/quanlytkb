@@ -176,6 +176,8 @@
 
 @section('scripts')
 <script>
+    const ADMIN_CLASS_SECTIONS_BASE = "{{ url('admin/class-sections') }}";
+
     function viewDetail(id) {
         const modal = new bootstrap.Modal(document.getElementById('detailModal'));
         const body = document.getElementById('detailBody');
@@ -183,7 +185,13 @@
         modal.show();
         body.innerHTML = '<p class="text-center">Đang tải...</p>';
 
-        fetch(`/admin/class-sections/${id}/detail`)
+        fetch(`${ADMIN_CLASS_SECTIONS_BASE}/${id}/detail`, {
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
             .then(res => res.json())
             .then(data => {
                 const cs = data.class_section;

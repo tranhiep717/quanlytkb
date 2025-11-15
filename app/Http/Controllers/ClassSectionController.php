@@ -393,11 +393,17 @@ class ClassSectionController extends Controller
             ->take(10)
             ->get()
             ->map(function ($log) {
+                $meta = $log->metadata;
+                // metadata is cast to array in LogEntry model; be defensive if string
+                if (!is_array($meta)) {
+                    $decoded = json_decode($meta ?? '', true);
+                    $meta = is_array($decoded) ? $decoded : ($meta ?? []);
+                }
                 return [
                     'action' => $log->action,
                     'user' => $log->user->name ?? 'System',
                     'timestamp' => $log->created_at->format('d/m/Y H:i'),
-                    'details' => json_decode($log->metadata, true)
+                    'details' => $meta
                 ];
             });
 

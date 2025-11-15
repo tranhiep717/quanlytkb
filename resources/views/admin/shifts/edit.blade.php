@@ -136,7 +136,7 @@
         @if(session('system_error'))
         showToast(@json(session('system_error')), 'error');
         @endif
-    @if($errors->any())
+        @if($errors->any())
         // Scroll to top so the banner and invalid fields are visible
         window.scrollTo({
             top: 0,

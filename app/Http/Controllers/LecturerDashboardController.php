@@ -482,16 +482,18 @@ class LecturerDashboardController extends Controller
     {
         $lecturer = Auth::user();
 
-        // Lấy thông báo dành cho giảng viên
-        $announcements = Announcement::where(function ($query) use ($lecturer) {
-            $query->where('target_audience', 'all')
-                ->orWhere('target_audience', 'lecturers')
-                ->orWhere(function ($q) use ($lecturer) {
-                    $q->where('target_audience', 'faculty')
-                        ->where('target_faculty_id', $lecturer->faculty_id);
-                });
-        })
-            ->orderBy('created_at', 'desc')
+        // Lấy thông báo dành cho giảng viên theo cấu trúc JSON 'audience'
+        // audience: { roles: [..], faculties: [..], cohorts: [..] }
+        // Hiển thị nếu: audience null (tất cả) OR roles chứa 'lecturers' OR faculties chứa khoa của giảng viên
+        $announcements = Announcement::query()
+            ->where(function ($q) use ($lecturer) {
+                $q->whereNull('audience')
+                    ->orWhereJsonContains('audience->roles', 'all')
+                    ->orWhereJsonContains('audience->roles', 'lecturers')
+                    ->orWhereJsonContains('audience->faculties', (int) $lecturer->faculty_id);
+            })
+            ->orderByDesc('published_at')
+            ->orderByDesc('created_at')
             ->paginate(20);
 
         return view('lecturer.notifications', [

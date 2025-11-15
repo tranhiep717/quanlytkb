@@ -498,12 +498,13 @@
 
 @section('scripts')
 <script>
+    const ADMIN_ROOMS_BASE = "{{ url('admin/rooms') }}";
     let currentRoomId = null;
 
     function viewRoomDetail(roomId) {
         currentRoomId = roomId;
         document.getElementById('detailModal').style.display = 'flex';
-        fetch('/admin/rooms/' + roomId + '/detail')
+        fetch(ADMIN_ROOMS_BASE + '/' + roomId + '/detail')
             .then(res => res.json())
             .then(data => {
                 document.getElementById('detailCode').textContent = data.code;
@@ -552,7 +553,7 @@
 
     function editFromDetail() {
         if (currentRoomId) {
-            window.location.href = '/admin/rooms/' + currentRoomId + '/edit';
+            window.location.href = ADMIN_ROOMS_BASE + '/' + currentRoomId + '/edit';
         }
     }
 
@@ -563,16 +564,13 @@
     });
 
     @if(session('error'))
-    showToast('error', 'Lỗi', '{{ session('
-        error ') }}');
+    showToast('error', 'Lỗi', @json(session('error')));
     @endif
     @if(session('success'))
-    showToast('success', 'Thành công', '{{ session('
-        success ') }}');
+    showToast('success', 'Thành công', @json(session('success')));
     @endif
     @if(session('warning'))
-    showToast('warning', 'Cảnh báo', '{{ session('
-        warning ') }}');
+    showToast('warning', 'Cảnh báo', @json(session('warning')));
     @endif
 
     function showToast(type, title, message) {

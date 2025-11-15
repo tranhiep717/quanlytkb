@@ -28,13 +28,20 @@
                         {{ $announcement->title }}
                     </h5>
                     <span class="badge bg-primary">
-                        @if($announcement->target_audience === 'all')
-                        Tất cả
-                        @elseif($announcement->target_audience === 'lecturers')
-                        Giảng viên
-                        @else
-                        Khoa
-                        @endif
+                        @php
+                        $label = 'Tất cả';
+                        $aud = $announcement->audience ?? null;
+                        if (is_array($aud)) {
+                        if (!empty($aud['faculties'])) {
+                        $label = 'Khoa';
+                        } elseif (!empty($aud['roles']) && in_array('lecturers', $aud['roles'])) {
+                        $label = 'Giảng viên';
+                        } elseif (!empty($aud['roles']) && in_array('all', $aud['roles'])) {
+                        $label = 'Tất cả';
+                        }
+                        }
+                        @endphp
+                        {{ $label }}
                     </span>
                 </div>
 

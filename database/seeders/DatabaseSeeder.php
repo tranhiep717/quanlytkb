@@ -194,6 +194,9 @@ class DatabaseSeeder extends Seeder
         Registration::create(['student_id' => $student2->id, 'class_section_id' => $class1->id]);
         Registration::create(['student_id' => $student3->id, 'class_section_id' => $class3->id]);
 
+        // 11. Thông báo mẫu dành cho giảng viên
+        $this->call(AnnouncementsSeeder::class);
+
         $this->command->info('✅ Đã tạo dữ liệu mẫu thành công!');
         $this->command->newLine();
         $this->command->info('📋 THÔNG TIN TÀI KHOẢN:');

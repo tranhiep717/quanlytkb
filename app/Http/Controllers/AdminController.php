@@ -193,7 +193,16 @@ class AdminController extends Controller
     public function createUser()
     {
         $faculties = Faculty::orderBy('name')->get();
-        return view('admin.users.create', ['faculties' => $faculties]);
+        // Load distinct cohorts from existing students
+        $cohorts = User::whereNotNull('class_cohort')
+            ->select('class_cohort')
+            ->distinct()
+            ->orderBy('class_cohort')
+            ->pluck('class_cohort');
+        return view('admin.users.create', [
+            'faculties' => $faculties,
+            'cohorts' => $cohorts,
+        ]);
     }
 
     // U-3: Lưu người dùng mới
@@ -233,7 +242,17 @@ class AdminController extends Controller
     public function editUser(User $user)
     {
         $faculties = Faculty::orderBy('name')->get();
-        return view('admin.users.edit', ['user' => $user, 'faculties' => $faculties]);
+        // Load distinct cohorts from existing students
+        $cohorts = User::whereNotNull('class_cohort')
+            ->select('class_cohort')
+            ->distinct()
+            ->orderBy('class_cohort')
+            ->pluck('class_cohort');
+        return view('admin.users.edit', [
+            'user' => $user,
+            'faculties' => $faculties,
+            'cohorts' => $cohorts,
+        ]);
     }
 
     // U-4: Cập nhật người dùng
@@ -447,8 +466,101 @@ class AdminController extends Controller
     // S-2: Xuất báo cáo
     public function exportReport(Request $request)
     {
-        // Placeholder cho export Excel/PDF
-        return back()->with('info', 'Chức năng xuất báo cáo đang được phát triển.');
+        // Lấy bộ lọc giống trang báo cáo
+        $academicYear = $request->query('academic_year', session('academic_year', '2024-2025'));
+        $term = $request->query('term', session('term', 'HK1'));
+        $facultyId = $request->query('faculty_id');
+        $cohort = $request->query('cohort');
+
+        // Truy vấn đăng ký kèm quan hệ cần thiết
+        $query = Registration::with([
+            'student',
+            'classSection.course.faculty',
+            'classSection.room',
+            'classSection.shift',
+            'classSection.lecturer',
+        ])->whereHas('classSection', function ($q) use ($academicYear, $term, $facultyId) {
+            $q->where('academic_year', $academicYear)
+                ->where('term', $term);
+            if ($facultyId) {
+                $q->whereHas('course', function ($qq) use ($facultyId) {
+                    $qq->where('faculty_id', $facultyId);
+                });
+            }
+        });
+
+        if ($cohort) {
+            $query->whereHas('student', function ($q) use ($cohort) {
+                $q->where('class_cohort', $cohort);
+            });
+        }
+
+        // Tên file thân thiện
+        $safeYear = preg_replace('/[^0-9\-]/', '', (string) $academicYear);
+        $fileName = sprintf('bao-cao-dang-ky_%s_%s_%s.csv', $safeYear ?: 'na', $term ?: 'na', now()->format('Ymd_His'));
+
+        // Stream CSV để tiết kiệm bộ nhớ
+        return response()->streamDownload(function () use ($query) {
+            // Excel trên Windows cần BOM để hiển thị UTF-8 chính xác
+            echo "\xEF\xBB\xBF";
+            $out = fopen('php://output', 'w');
+
+            // Header
+            fputcsv($out, [
+                'MSSV',
+                'Họ tên SV',
+                'Khóa',
+                'Mã HP',
+                'Tên học phần',
+                'Số TC',
+                'Lớp HP',
+                'Khoa',
+                'Ca học',
+                'Phòng',
+                'Giảng viên',
+                'Thời điểm ĐK'
+            ]);
+
+            // Ghi theo từng lô để tránh tốn RAM
+            $query->orderBy('id')->chunk(1000, function ($regs) use ($out) {
+                foreach ($regs as $reg) {
+                    $student = $reg->student;
+                    $sec = $reg->classSection;
+                    $course = $sec?->course;
+                    $faculty = $course?->faculty;
+                    $shift = $sec?->shift;
+                    $room = $sec?->room;
+                    $lecturer = $sec?->lecturer;
+
+                    $shiftText = '';
+                    if ($shift) {
+                        // Dạng: "Thứ 2 07:00 - 09:30" nếu có accessor day_name/time_range
+                        $dayName = method_exists($shift, 'getDayNameAttribute') ? $shift->day_name : ($shift->day_of_week ? ('Thứ ' . $shift->day_of_week) : '');
+                        $timeRange = method_exists($shift, 'getTimeRangeAttribute') ? $shift->time_range : '';
+                        $shiftText = trim($dayName . ' ' . $timeRange);
+                    }
+
+                    fputcsv($out, [
+                        $student->code ?? '',
+                        $student->name ?? '',
+                        $student->class_cohort ?? '',
+                        $course->code ?? '',
+                        $course->name ?? '',
+                        $course->credits ?? 0,
+                        $sec->section_code ?? '',
+                        $faculty->name ?? '',
+                        $shiftText,
+                        $room?->code ?? $room?->name ?? '',
+                        $lecturer?->name ?? '',
+                        optional($reg->created_at)->format('d/m/Y H:i'),
+                    ]);
+                }
+            });
+
+            fclose($out);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     // S-3: Xem nhật ký hệ thống

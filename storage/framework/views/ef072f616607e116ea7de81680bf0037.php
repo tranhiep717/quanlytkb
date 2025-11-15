@@ -111,71 +111,6 @@
         border-top: 1px solid #e5e7eb;
     }
 
-    /* Multi-select dropdown */
-    .multiselect {
-        position: relative;
-    }
-
-    .ms-trigger {
-        width: 100%;
-        text-align: left;
-        padding: 10px;
-        border: 1px solid #cbd5e0;
-        border-radius: 6px;
-        background: white;
-        color: #1f2937;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-    }
-
-    .ms-trigger span {
-        color: #64748b;
-    }
-
-    .ms-panel {
-        position: absolute;
-        z-index: 10;
-        top: calc(100% + 6px);
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-        max-height: 260px;
-        overflow: auto;
-        padding: 6px;
-        display: none;
-    }
-
-    .ms-panel.open {
-        display: block;
-    }
-
-    .ms-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-
-    .ms-item:hover {
-        background: #f8fafc;
-    }
-
-    .ms-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 10px;
-        border-top: 1px solid #e5e7eb;
-    }
-
     /* Toasts */
     .toast-container {
         position: fixed;
@@ -219,12 +154,19 @@
 <div style="background:white; padding:24px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
         <h2 style="margin:0; font-size:20px; font-weight:600; color:#1e293b;">⏰ Quản lý Đợt đăng ký</h2>
-        <button type="button" onclick="openWaveModal()" style="background:#16a34a; color:white; padding:10px 20px; border-radius:6px; border:none; display:inline-flex; align-items:center; gap:8px; font-weight:500;">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-            </svg>
-            Thêm Đợt đăng ký
-        </button>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <a href="<?php echo e(route('registration-waves.trashed')); ?>" style="background:#64748b; color:white; padding:10px 14px; border-radius:6px; text-decoration:none; display:inline-flex; align-items:center; gap:8px; font-weight:500;">Kho lưu trữ</a>
+        <form method="POST" action="<?php echo e(route('registration-waves.bulk-destroy')); ?>" onsubmit="return confirm('Bạn có chắc muốn xóa tất cả các đợt đăng ký? Các đợt sẽ được đưa vào Kho lưu trữ.');" style="display:inline;">
+            <?php echo csrf_field(); ?>
+            <button type="submit" style="background:#dc2626; color:white; padding:10px 14px; border-radius:6px; border:none; display:inline-flex; align-items:center; gap:8px; font-weight:500;">Xóa tất cả</button>
+        </form>
+            <button type="button" onclick="openWaveModal()" style="background:#16a34a; color:white; padding:10px 20px; border-radius:6px; border:none; display:inline-flex; align-items:center; gap:8px; font-weight:500;">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                </svg>
+                Thêm Đợt đăng ký
+            </button>
+        </div>
     </div>
 
     <?php if(session('success')): ?>
@@ -262,21 +204,22 @@
                         <?php
                         $audience = is_array($wave->audience) ? $wave->audience : json_decode($wave->audience, true);
                         $facIds = $audience['faculties'] ?? [];
-                        $cohorts = $audience['cohorts'] ?? [];
+                        // Rename to avoid shadowing the $cohorts passed from controller
+                        $audCohorts = $audience['cohorts'] ?? [];
                         $facCodes = $faculties->whereIn('id', $facIds)->pluck('code')->values()->all();
                         $facPreview = collect($facCodes)->take(2)->implode(', ');
                         $facMore = max(count($facCodes) - 2, 0);
-                        $cohPreview = collect($cohorts)->take(2)->implode(', ');
-                        $cohMore = max(count($cohorts) - 2, 0);
+                        $cohPreview = collect($audCohorts)->take(2)->implode(', ');
+                        $cohMore = max(count($audCohorts) - 2, 0);
                         ?>
                         <div class="small" style="display:flex; gap:6px; flex-wrap:wrap;">
                             <?php if(count($facCodes)>0): ?>
                             <span class="tag">Khoa: <?php echo e($facPreview); ?><?php if($facMore>0): ?>, +<?php echo e($facMore); ?><?php endif; ?></span>
                             <?php endif; ?>
-                            <?php if(count($cohorts)>0): ?>
+                            <?php if(count($audCohorts)>0): ?>
                             <span class="tag">Khóa: <?php echo e($cohPreview); ?><?php if($cohMore>0): ?>, +<?php echo e($cohMore); ?><?php endif; ?></span>
                             <?php endif; ?>
-                            <?php if(count($facCodes)==0 && count($cohorts)==0): ?>
+                            <?php if(count($facCodes)==0 && count($audCohorts)==0): ?>
                             <span style="color:#94a3b8;">Toàn bộ</span>
                             <?php endif; ?>
                         </div>
@@ -402,58 +345,62 @@
                     </div>
 
                     <div class="tab-pane" id="tab-audience">
-                        <div class="section-title">2. Đối tượng</div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-                            <div>
-                                <label style="display:block; margin-bottom:6px; font-weight:500; color:#475569; font-size:14px;">Khu vực 1: Chọn Khoa/Ngành</label>
-                                <div id="ms_faculties" class="multiselect" data-name="faculties[]">
-                                    <button type="button" class="ms-trigger" data-placeholder="-- Chọn Khoa/Ngành --"><span>-- Chọn Khoa/Ngành --</span><svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M1.5 5.5l6 6 6-6" />
-                                        </svg></button>
-                                    <div class="ms-panel">
-                                        <label class="ms-item"><input type="checkbox" data-role="all"> Tất cả các Khoa</label>
-                                        <?php $__currentLoopData = $faculties; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fac): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <label class="ms-item"><input type="checkbox" value="<?php echo e($fac->id); ?>"> <?php echo e($fac->code); ?> — <?php echo e($fac->name); ?></label>
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                        <div class="ms-footer">
-                                            <small style="color:#64748b;">Mẹo: Giữ Ctrl để chọn nhanh khi dùng bàn phím</small>
-                                            <button type="button" class="action-btn" style="background:#1976d2; color:#fff; width:auto; padding:6px 10px;" onclick="closeAllMsPanels(this)">Xong</button>
-                                        </div>
-                                    </div>
-                                    <div class="ms-hidden"></div>
-                                </div>
-                                <small style="color:#64748b; display:block; margin-top:6px;">Gợi ý: Có thể mở rộng để chọn Ngành (khi có dữ liệu).</small>
+                        <div class="section-title">2. Chọn đối tượng</div>
+
+                        <!-- Faculties -->
+                        <div style="margin-bottom:24px;">
+                            <label style="display:block; margin-bottom:8px; font-weight:600; color:#475569; font-size:14px;">Lọc theo Khoa</label>
+                            <div style="max-height:180px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:8px; padding:8px; background:#fafafa;">
+                                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; cursor:pointer; border-radius:4px; transition:background .15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=''">
+                                    <input type="checkbox" id="faculties_all" onchange="toggleAllFaculties(this.checked)">
+                                    <strong>Chọn tất cả Khoa</strong>
+                                </label>
+                                <?php $__currentLoopData = $faculties; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fac): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; cursor:pointer; border-radius:4px; transition:background .15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=''">
+                                    <input type="checkbox" name="faculties[]" value="<?php echo e($fac->id); ?>" class="faculty-checkbox" onchange="updateFacultyTags()">
+                                    <?php echo e($fac->code); ?> — <?php echo e($fac->name); ?>
+
+                                </label>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
-                            <div>
-                                <label style="display:block; margin-bottom:6px; font-weight:500; color:#475569; font-size:14px;">Khu vực 2: Chọn Khóa học/Lớp</label>
-                                <div id="ms_cohorts" class="multiselect" data-name="cohorts[]">
-                                    <button type="button" class="ms-trigger" data-placeholder="-- Chọn Khóa học/Lớp --"><span>-- Chọn Khóa học/Lớp --</span><svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                            <path d="M1.5 5.5l6 6 6-6" />
-                                        </svg></button>
-                                    <div class="ms-panel">
-                                        <label class="ms-item"><input type="checkbox" data-role="all"> Tất cả các Khóa</label>
-                                        <?php $__empty_1 = true; $__currentLoopData = $cohorts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $coh): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                        <label class="ms-item"><input type="checkbox" value="<?php echo e($coh); ?>"> <?php echo e($coh); ?></label>
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                                        <div style="padding:8px 10px; color:#94a3b8;">Chưa có dữ liệu Khóa trong hệ thống</div>
-                                        <?php endif; ?>
-                                        <div class="ms-footer">
-                                            <small style="color:#64748b;">Chọn nhiều theo nhu cầu</small>
-                                            <button type="button" class="action-btn" style="background:#1976d2; color:#fff; width:auto; padding:6px 10px;" onclick="closeAllMsPanels(this)">Xong</button>
-                                        </div>
-                                    </div>
-                                    <div class="ms-hidden"></div>
-                                </div>
+                            <div id="faculty_tags" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; min-height:28px;"></div>
+                        </div>
+
+                        <!-- Cohorts -->
+                        <div>
+                            <label style="display:block; margin-bottom:8px; font-weight:600; color:#475569; font-size:14px;">Lọc theo Khóa học (<?php echo e(count($cohorts)); ?> khóa)</label>
+                            <div style="max-height:180px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:8px; padding:8px; background:#fafafa;">
+                                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; cursor:pointer; border-radius:4px; transition:background .15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=''">
+                                    <input type="checkbox" id="cohorts_all" onchange="toggleAllCohorts(this.checked)">
+                                    <strong>Chọn tất cả Khóa</strong>
+                                </label>
+                                <?php $__currentLoopData = $cohorts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $coh): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <label style="display:flex; align-items:center; gap:8px; padding:6px 8px; cursor:pointer; border-radius:4px; transition:background .15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background=''">
+                                    <input type="checkbox" name="cohorts[]" value="<?php echo e($coh); ?>" class="cohort-checkbox" onchange="updateCohortTags()">
+                                    <?php echo e($coh); ?>
+
+                                </label>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
+                            <div id="cohort_tags" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; min-height:28px;"></div>
                         </div>
                     </div>
 
                     <div class="tab-pane" id="tab-offerings">
                         <div class="section-title">3. Học phần mở</div>
-                        <div style="display:flex; gap:12px; align-items:end; margin-bottom:12px;">
-                            <div style="flex:1;">
+                        <div style="display:flex; gap:12px; align-items:end; margin-bottom:12px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:240px;">
                                 <label style="display:block; margin-bottom:6px; font-weight:500; color:#475569; font-size:14px;">Tìm kiếm</label>
                                 <input type="text" id="offerings_search" placeholder="Mã/ tên môn hoặc mã lớp" style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px;">
+                            </div>
+                            <div style="width:260px;">
+                                <label style="display:block; margin-bottom:6px; font-weight:500; color:#475569; font-size:14px;">Khoa</label>
+                                <select id="offerings_faculty" style="width:100%; padding:10px; border:1px solid #cbd5e0; border-radius:6px; font-size:14px; background:white;">
+                                    <option value="">-- Tất cả Khoa --</option>
+                                    <?php $__currentLoopData = $faculties; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fac): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($fac->id); ?>"><?php echo e($fac->code); ?> — <?php echo e($fac->name); ?></option>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                </select>
                             </div>
                         </div>
                         <div id="offerings_container" style="max-height:420px; overflow:auto; border:1px solid #e5e7eb; border-radius:8px;">
@@ -463,6 +410,7 @@
                                         <th style="padding:10px; width:36px;"><input type="checkbox" id="offerings_check_all" title="Chọn tất cả"></th>
                                         <th style="padding:10px; text-align:left; font-size:13px; color:#475569;">MÃ LHP</th>
                                         <th style="padding:10px; text-align:left; font-size:13px; color:#475569;">TÊN MÔN HỌC</th>
+                                        <th style="padding:10px; text-align:left; font-size:13px; color:#475569;">KHOA</th>
                                         <th style="padding:10px; text-align:left; font-size:13px; color:#475569;">GV</th>
                                         <th style="padding:10px; text-align:left; font-size:13px; color:#475569;">LỊCH</th>
                                         <th style="padding:10px; text-align:left; font-size:13px; color:#475569;">SĨ SỐ</th>
@@ -470,7 +418,7 @@
                                 </thead>
                                 <tbody id="offerings_tbody">
                                     <tr>
-                                        <td colspan="8" style="padding:16px; text-align:center; color:#94a3b8;">Chọn Năm học và Học kỳ để tải lớp học phần</td>
+                                        <td colspan="8" style="padding:16px; text-align:center; color:#94a3b8;">Đang tải...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -568,8 +516,12 @@
         document.getElementById('wave_id').value = id || '';
         document.getElementById('formMethod').innerHTML = '';
         form.action = id ? `<?php echo e(url('admin/registration-waves')); ?>/${id}` : `<?php echo e(route('registration-waves.store')); ?>`;
-        // Reset multiselects
-        resetAllMultiSelects();
+        // Reset checkboxes
+        document.querySelectorAll('.faculty-checkbox, .cohort-checkbox').forEach(cb => cb.checked = false);
+        document.getElementById('faculties_all').checked = false;
+        document.getElementById('cohorts_all').checked = false;
+        updateFacultyTags();
+        updateCohortTags();
         if (id) {
             document.getElementById('formMethod').innerHTML = "<input type='hidden' name='_method' value='PUT'>";
             fetch(`<?php echo e(url('admin/registration-waves')); ?>/${id}/detail`).then(r => r.json()).then(({
@@ -583,16 +535,28 @@
                 setValue('term', wave.term);
                 setValue('starts_at', wave.starts_at ? wave.starts_at.replace(' ', 'T').slice(0, 16) : '');
                 setValue('ends_at', wave.ends_at ? wave.ends_at.replace(' ', 'T').slice(0, 16) : '');
-                setMultiChecklist('faculties[]', (wave.faculties || []).map(f => String(f.id)));
-                setMultiChecklist('cohorts[]', (wave.cohorts || []).map(String));
+                setFaculties((wave.faculties || []).map(f => String(f.id)));
+                setCohorts((wave.cohorts || []).map(String));
                 maybeLoadOfferings(() => {
                     setChecked('class_section_ids[]', (offerings || []).map(o => String(o.id)));
                 });
                 overlay.style.display = 'flex';
             });
         } else {
-            clearOfferingsTable();
             overlay.style.display = 'flex';
+            // If year/term are empty, pick the first available options to avoid extra user steps
+            const yearSel = document.getElementById('academic_year');
+            const termSel = document.getElementById('term');
+            if (yearSel && !yearSel.value) {
+                const opt = Array.from(yearSel.options).find(o => o.value);
+                if (opt) yearSel.value = opt.value;
+            }
+            if (termSel && !termSel.value) {
+                const opt = Array.from(termSel.options).find(o => o.value);
+                if (opt) termSel.value = opt.value;
+            }
+            // Auto-load offerings immediately based on selected year/term
+            maybeLoadOfferings();
         }
     }
 
@@ -604,26 +568,81 @@
         const el = document.getElementById(id);
         if (el) el.value = val ?? '';
     }
-    // Multiselect helpers
-    function resetAllMultiSelects() {
-        document.querySelectorAll('.multiselect').forEach(initMultiSelect);
+
+    // Simple checkbox helpers for faculties
+    function toggleAllFaculties(checked) {
+        document.querySelectorAll('.faculty-checkbox').forEach(cb => cb.checked = checked);
+        updateFacultyTags();
     }
 
-    function setMultiChecklist(name, values) {
-        const el = Array.from(document.querySelectorAll('.multiselect')).find(ms => ms.dataset.name === name);
-        if (!el) return;
-        const checkboxes = el.querySelectorAll(".ms-panel input[type='checkbox'][value]");
-        checkboxes.forEach(cb => {
-            cb.checked = values.includes(String(cb.value));
+    function updateFacultyTags() {
+        const container = document.getElementById('faculty_tags');
+        container.innerHTML = '';
+        const checked = Array.from(document.querySelectorAll('.faculty-checkbox:checked'));
+        checked.forEach(cb => {
+            const label = cb.closest('label').textContent.trim();
+            const tag = document.createElement('span');
+            tag.style.cssText = 'background:#dbeafe; color:#1e40af; padding:4px 10px; border-radius:12px; font-size:12px; display:inline-flex; align-items:center; gap:4px;';
+            tag.innerHTML = `${escapeHtml(label)} <button type="button" onclick="removeFaculty('${cb.value}')" style="background:none; border:none; color:#1e40af; cursor:pointer; padding:0; font-size:14px;">⊗</button>`;
+            container.appendChild(tag);
         });
-        updateMsSummary(el);
-        syncMsHidden(el);
-        // update "all" checkbox state
-        const all = el.querySelector(".ms-panel input[type='checkbox'][data-role='all']");
-        if (all) {
-            const items = Array.from(checkboxes);
-            all.checked = items.length > 0 && items.every(i => i.checked);
+        const all = document.getElementById('faculties_all');
+        if (all) all.checked = checked.length > 0 && checked.length === document.querySelectorAll('.faculty-checkbox').length;
+    }
+
+    function removeFaculty(id) {
+        const cb = document.querySelector(`.faculty-checkbox[value="${CSS.escape(id)}"]`);
+        if (cb) {
+            cb.checked = false;
+            updateFacultyTags();
         }
+    }
+
+    // Simple checkbox helpers for cohorts
+    function toggleAllCohorts(checked) {
+        document.querySelectorAll('.cohort-checkbox').forEach(cb => cb.checked = checked);
+        updateCohortTags();
+    }
+
+    function updateCohortTags() {
+        const container = document.getElementById('cohort_tags');
+        container.innerHTML = '';
+        const checked = Array.from(document.querySelectorAll('.cohort-checkbox:checked'));
+        checked.forEach(cb => {
+            const label = cb.value;
+            const tag = document.createElement('span');
+            tag.style.cssText = 'background:#cffafe; color:#164e63; padding:4px 10px; border-radius:12px; font-size:12px; display:inline-flex; align-items:center; gap:4px;';
+            tag.innerHTML = `${escapeHtml(label)} <button type="button" onclick="removeCohort('${label}')" style="background:none; border:none; color:#164e63; cursor:pointer; padding:0; font-size:14px;">⊗</button>`;
+            container.appendChild(tag);
+        });
+        const all = document.getElementById('cohorts_all');
+        if (all) all.checked = checked.length > 0 && checked.length === document.querySelectorAll('.cohort-checkbox').length;
+    }
+
+    function removeCohort(val) {
+        const cb = document.querySelector(`.cohort-checkbox[value="${CSS.escape(val)}"]`);
+        if (cb) {
+            cb.checked = false;
+            updateCohortTags();
+        }
+    }
+
+    function setFaculties(ids) {
+        document.querySelectorAll('.faculty-checkbox').forEach(cb => {
+            cb.checked = ids.includes(String(cb.value));
+        });
+        updateFacultyTags();
+    }
+
+    function setCohorts(vals) {
+        document.querySelectorAll('.cohort-checkbox').forEach(cb => {
+            cb.checked = vals.includes(String(cb.value));
+        });
+        updateCohortTags();
+    }
+
+    function v(id) {
+        return (document.getElementById(id)?.value || '').trim();
     }
 
     function setChecked(name, values) {
@@ -640,18 +659,19 @@
         }
     }
 
-    function v(id) {
-        return (document.getElementById(id)?.value || '').trim();
-    }
     async function loadOfferings() {
         const year = v('academic_year');
         const term = v('term');
-        const facultyId = '';
+        const facultyId = (document.getElementById('offerings_faculty')?.value || '').trim();
         const q = (document.getElementById('offerings_search').value || '').trim();
         if (!year || !term) {
             clearOfferingsTable();
             return;
         }
+        // Preserve current selections across reloads
+        const previouslyChecked = new Set(Array.from(document.querySelectorAll("#offerings_tbody input[name='class_section_ids[]']:checked")).map(el => el.value));
+        // Show a lightweight loading row while fetching
+        document.getElementById('offerings_tbody').innerHTML = `<tr><td colspan='8' style='padding:16px; text-align:center; color:#64748b;'>Đang tải danh sách lớp học phần...</td></tr>`;
         const url = new URL(`<?php echo e(url('admin/registration-waves/offerings')); ?>`);
         url.searchParams.set('academic_year', year);
         url.searchParams.set('term', term);
@@ -661,9 +681,10 @@
         const json = await res.json();
         const rows = (json.data || []).map(row => `
             <tr>
-                <td style='padding:8px;'><input type='checkbox' name='class_section_ids[]' value='${row.id}'></td>
+                <td style='padding:8px;'><input type='checkbox' name='class_section_ids[]' value='${row.id}' ${previouslyChecked.has(String(row.id)) ? 'checked' : ''}></td>
                 <td style='padding:8px;'>${escapeHtml(row.section_code||'')}</td>
                 <td style='padding:8px;'><span class='badge-chip' style='background:#cffafe; color:#164e63;'>${escapeHtml(row.course_code||'')}</span> ${escapeHtml(row.course_name||'')}</td>
+                <td style='padding:8px;'>${row.faculty ? escapeHtml(row.faculty.code) : ''}</td>
                 <td style='padding:8px;'>${escapeHtml(row.lecturer||'')}</td>
                 <td style='padding:8px;'>${formatSchedule(row)}</td>
                 <td style='padding:8px;'>${escapeHtml(String(row.max_capacity||''))}</td>
@@ -674,7 +695,7 @@
     }
 
     function clearOfferingsTable() {
-        document.getElementById('offerings_tbody').innerHTML = `<tr><td colspan='8' style='padding:16px; text-align:center; color:#94a3b8;'>Chọn Năm học và Học kỳ để tải lớp học phần</td></tr>`;
+        document.getElementById('offerings_tbody').innerHTML = `<tr><td colspan='8' style='padding:16px; text-align:center; color:#94a3b8;'>Chưa có dữ liệu</td></tr>`;
     }
 
     function escapeHtml(s) {
@@ -686,95 +707,6 @@
             '\'': '&#39;'
         } [c]))
     }
-
-    // Multi-select dropdown implementation
-    function initMultiSelect(el) {
-        if (!el || el.__inited) return;
-        el.__inited = true;
-        const trigger = el.querySelector('.ms-trigger');
-        const panel = el.querySelector('.ms-panel');
-        const allCb = panel?.querySelector("input[type='checkbox'][data-role='all']");
-        const items = panel?.querySelectorAll("input[type='checkbox'][value]") || [];
-        const placeholder = trigger?.getAttribute('data-placeholder') || '-- Chọn --';
-        const updateAllState = () => {
-            const arr = Array.from(items);
-            if (allCb) {
-                allCb.checked = arr.length > 0 && arr.every(i => i.checked);
-            }
-        };
-        const onChange = () => {
-            updateMsSummary(el);
-            syncMsHidden(el);
-            updateAllState();
-        };
-        trigger?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            closeAllMsPanels();
-            panel?.classList.toggle('open');
-        });
-        panel?.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-        allCb?.addEventListener('change', () => {
-            items.forEach(cb => cb.checked = allCb.checked);
-            onChange();
-        });
-        items.forEach(cb => cb.addEventListener('change', onChange));
-        // Initial summary
-        updateMsSummary(el, placeholder);
-        // Hidden inputs container
-        syncMsHidden(el);
-    }
-
-    function closeAllMsPanels(excludeBtn) {
-        document.querySelectorAll('.ms-panel.open').forEach(p => {
-            if (!excludeBtn || !p.contains(excludeBtn)) p.classList.remove('open');
-        });
-    }
-
-    function updateMsSummary(el, placeholder = null) {
-        const trigger = el.querySelector('.ms-trigger');
-        const selected = getMsSelectedValues(el);
-        const text = selected.length === 0 ? (placeholder || trigger.getAttribute('data-placeholder') || '-- Chọn --') : `${selected.length} đã chọn`;
-        const span = trigger.querySelector('span');
-        if (span) span.textContent = text;
-    }
-
-    function getMsSelectedValues(el) {
-        return Array.from(el.querySelectorAll(".ms-panel input[type='checkbox'][value]:checked")).map(cb => cb.value);
-    }
-
-    function syncMsHidden(el) {
-        const name = el.dataset.name;
-        const hidden = el.querySelector('.ms-hidden');
-        hidden.innerHTML = '';
-        getMsSelectedValues(el).forEach(val => {
-            const h = document.createElement('input');
-            h.type = 'hidden';
-            h.name = name;
-            h.value = val;
-            hidden.appendChild(h);
-        });
-    }
-    // Initialize on DOM ready
-    document.addEventListener('click', () => closeAllMsPanels());
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.multiselect').forEach(initMultiSelect);
-    });
-    // Ensure hidden inputs are present before submit
-    document.getElementById('waveForm').addEventListener('submit', function(e) {
-        document.querySelectorAll('.multiselect').forEach(syncMsHidden);
-        if (!validateWaveFrontend()) {
-            e.preventDefault();
-        }
-    });
-    // Offerings: master checkbox
-    document.addEventListener('change', function(e) {
-        if (e.target && e.target.id === 'offerings_check_all') {
-            const on = e.target.checked;
-            document.querySelectorAll("#offerings_tbody input[type='checkbox'][name='class_section_ids[]']").forEach(cb => cb.checked = on);
-        }
-    });
 
     function formatSchedule(row) {
         const dow = row.day_of_week ? `Thứ ${row.day_of_week}` : '';
@@ -801,6 +733,28 @@
         el.addEventListener('change', () => {
             maybeLoadOfferings();
         });
+    });
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        // Debounce search to avoid excessive requests
+        const search = document.getElementById('offerings_search');
+        let t;
+        if (search) {
+            search.addEventListener('input', () => {
+                clearTimeout(t);
+                t = setTimeout(() => maybeLoadOfferings(), 300);
+            });
+        }
+        // Faculty filter
+        document.getElementById('offerings_faculty')?.addEventListener('change', () => maybeLoadOfferings());
+    });
+    // Offerings: master checkbox
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.id === 'offerings_check_all') {
+            const on = e.target.checked;
+            document.querySelectorAll("#offerings_tbody input[type='checkbox'][name='class_section_ids[]']").forEach(cb => cb.checked = on);
+        }
     });
 
     // Frontend validation with inline messages and auto-scroll
@@ -832,15 +786,15 @@
         }
 
         // Audience selections
-        const facSelected = getMsSelectedValues(document.getElementById('ms_faculties')).length;
-        const cohSelected = getMsSelectedValues(document.getElementById('ms_cohorts')).length;
+        const facSelected = document.querySelectorAll('.faculty-checkbox:checked').length;
+        const cohSelected = document.querySelectorAll('.cohort-checkbox:checked').length;
         if (!facSelected) {
-            addError(document.getElementById('ms_faculties'), 'Vui lòng chọn ít nhất một Khoa/Ngành.');
-            errs.push(document.getElementById('ms_faculties'));
+            addError(document.getElementById('faculty_tags').previousElementSibling, 'Vui lòng chọn ít nhất một Khoa.');
+            errs.push(document.getElementById('faculty_tags'));
         }
         if (!cohSelected) {
-            addError(document.getElementById('ms_cohorts'), 'Vui lòng chọn ít nhất một Khóa/Lớp.');
-            errs.push(document.getElementById('ms_cohorts'));
+            addError(document.getElementById('cohort_tags').previousElementSibling, 'Vui lòng chọn ít nhất một Khóa.');
+            errs.push(document.getElementById('cohort_tags'));
         }
 
         // Offerings
@@ -888,8 +842,8 @@
             setValue('term', <?php echo json_encode(old('term'), 15, 512) ?> || '');
             setValue('starts_at', (<?php echo json_encode(old('starts_at'), 15, 512) ?> || '').replace(' ', 'T'));
             setValue('ends_at', (<?php echo json_encode(old('ends_at'), 15, 512) ?> || '').replace(' ', 'T'));
-            setMultiChecklist('faculties[]', (<?php echo json_encode(old('faculties', []), 512) ?> || []).map(String));
-            setMultiChecklist('cohorts[]', (<?php echo json_encode(old('cohorts', []), 512) ?> || []).map(String));
+            setFaculties((<?php echo json_encode(old('faculties', []), 512) ?> || []).map(String));
+            setCohorts((<?php echo json_encode(old('cohorts', []), 512) ?> || []).map(String));
             const oldIds = (<?php echo json_encode(old('class_section_ids', []), 512) ?> || []).map(String);
             maybeLoadOfferings(() => setChecked('class_section_ids[]', oldIds));
             if (be) {
@@ -903,28 +857,26 @@
     async function deleteWave(id, btn) {
         if (!confirm('Bạn có chắc muốn xóa đợt đăng ký này?')) return;
         const url = `<?php echo e(url('admin/registration-waves')); ?>/${id}`;
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-            },
-            body: new URLSearchParams({
-                _method: 'DELETE'
-            })
-        });
-        if (res.ok) {
+        try {
+            const res = await fetch(url, {
+                method: 'DELETE',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            if (!res.ok) {
+                const j = await res.json().catch(() => ({}));
+                throw new Error(j.message || `Xóa thất bại (HTTP ${res.status}).`);
+            }
+            // Success
             const tr = btn.closest('tr');
             if (tr) tr.remove();
             showToast('Đã xóa đợt đăng ký thành công.', 'success');
-        } else {
-            try {
-                const j = await res.json();
-                showToast(j.message || 'Xóa thất bại.', 'error');
-            } catch {
-                showToast('Xóa thất bại.', 'error');
-            }
+        } catch (e) {
+            showToast(e.message || 'Xóa thất bại.', 'error');
         }
     }
     // On load: also echo session toasts if available

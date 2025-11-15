@@ -18,12 +18,22 @@ class RegistrationWaveController extends Controller
         $waves = RegistrationWave::orderBy('starts_at', 'desc')->paginate(20);
         // Needed by index view to render audience faculties badges
         $faculties = Faculty::select('id', 'code', 'name')->orderBy('name')->get();
-        // Distinct cohorts (e.g., K17, K18) from users/students
-        $cohorts = User::whereNotNull('class_cohort')
+
+        // Distinct cohorts from users/students + predefined common cohorts
+        $dbCohorts = User::whereNotNull('class_cohort')
+            ->where('class_cohort', '!=', '')
             ->select('class_cohort')
             ->distinct()
-            ->orderBy('class_cohort')
-            ->pluck('class_cohort');
+            ->pluck('class_cohort')
+            ->toArray();
+
+        // Merge with common cohort options to ensure we always have choices
+        $commonCohorts = ['K15', 'K16', 'K17', 'K18', 'K19', 'K20', 'K21'];
+        $cohorts = collect(array_merge($commonCohorts, $dbCohorts))
+            ->unique()
+            ->sort()
+            ->values();
+
         // Distinct academic years and terms from existing class sections
         $years = ClassSection::select('academic_year')
             ->distinct()
@@ -220,17 +230,55 @@ class RegistrationWaveController extends Controller
     // S-1: Xóa đợt đăng ký
     public function destroy(Request $request, RegistrationWave $registrationWave)
     {
+        // Rule: If any student has registrations in class sections of this wave, do NOT allow deletion.
+        // Otherwise, allow deletion (currently soft delete for safety).
         try {
-            DB::transaction(function () use ($registrationWave) {
-                // Detach offerings explicitly to avoid FK issues on some drivers
-                $registrationWave->classSections()->detach();
-                $registrationWave->delete();
-            });
+            // If wave has not started yet, allow deletion regardless of existing registrations in those class sections
+            $now = now();
+            $starts = \Carbon\Carbon::parse($registrationWave->starts_at);
+
+            if ($now->lt($starts)) {
+                $deleted = (bool) $registrationWave->delete();
+
+                LogEntry::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'registration_wave_deleted',
+                    'metadata' => json_encode(['wave_name' => $registrationWave->name, 'soft' => true, 'reason' => 'pre_start']),
+                ]);
+
+                if ($request->expectsJson()) {
+                    return response()->json(['status' => $deleted ? 'ok' : 'error']);
+                }
+                return redirect()->route('registration-waves.index')->with($deleted ? 'success' : 'error', $deleted ? 'Xóa đợt đăng ký thành công.' : 'Xóa đợt đăng ký không thành công.');
+            }
+
+            $regCount = \App\Models\Registration::whereIn('class_section_id', function ($q) use ($registrationWave) {
+                $q->from('registration_wave_class_section')
+                    ->select('class_section_id')
+                    ->where('registration_wave_id', $registrationWave->id);
+            })->count();
+
+            if ($regCount > 0) {
+                $msg = "Không thể xóa vì có {$regCount} lượt đăng ký của sinh viên trong các lớp thuộc đợt này.";
+                return $request->expectsJson()
+                    ? response()->json(['status' => 'error', 'message' => $msg], 422)
+                    : redirect()->route('registration-waves.index')->with('error', $msg);
+            }
+
+            // No registrations => proceed to delete (soft delete to keep audit). If you prefer permanent, switch to forceDelete().
+            $deleted = (bool) $registrationWave->delete();
+
+            if (!$deleted) {
+                $msg = 'Xóa đợt đăng ký không thành công. Đợt có thể đã bị xóa hoặc có lỗi hệ thống.';
+                return $request->expectsJson()
+                    ? response()->json(['status' => 'error', 'message' => $msg], 422)
+                    : redirect()->route('registration-waves.index')->with('error', $msg);
+            }
 
             LogEntry::create([
                 'user_id' => auth()->id(),
                 'action' => 'registration_wave_deleted',
-                'metadata' => json_encode(['wave_name' => $registrationWave->name]),
+                'metadata' => json_encode(['wave_name' => $registrationWave->name, 'soft' => true]),
             ]);
 
             if ($request->expectsJson()) {
@@ -239,10 +287,10 @@ class RegistrationWaveController extends Controller
             return redirect()->route('registration-waves.index')->with('success', 'Xóa đợt đăng ký thành công.');
         } catch (\Throwable $e) {
             report($e);
-            if ($request->expectsJson()) {
-                return response()->json(['status' => 'error', 'message' => 'Không thể xóa đợt đăng ký do ràng buộc dữ liệu.'], 422);
-            }
-            return redirect()->route('registration-waves.index')->with('error', 'Không thể xóa đợt đăng ký do ràng buộc dữ liệu. Vui lòng gỡ liên kết lớp học phần hoặc thử lại sau.');
+            $msg = 'Không thể xóa do lỗi hệ thống. Vui lòng thử lại sau.';
+            return $request->expectsJson()
+                ? response()->json(['status' => 'error', 'message' => $msg], 500)
+                : redirect()->route('registration-waves.index')->with('error', $msg);
         }
     }
 
@@ -346,5 +394,109 @@ class RegistrationWaveController extends Controller
             ],
             'offerings' => $offerings,
         ]);
+    }
+
+    // List soft-deleted waves (archive)
+    public function trashed()
+    {
+        $waves = RegistrationWave::onlyTrashed()->orderByDesc('deleted_at')->paginate(20);
+        return view('admin.registration-waves.trashed', [
+            'waves' => $waves,
+        ]);
+    }
+
+    // Restore a soft-deleted wave
+    public function restore($id)
+    {
+        $wave = RegistrationWave::withTrashed()->findOrFail($id);
+        $wave->restore();
+        LogEntry::create([
+            'user_id' => auth()->id(),
+            'action' => 'registration_wave_restored',
+            'metadata' => json_encode(['wave_id' => $wave->id, 'name' => $wave->name]),
+        ]);
+        return redirect()->route('registration-waves.trashed')->with('success', 'Khôi phục đợt đăng ký thành công.');
+    }
+
+    // Permanently delete a wave (only when no registrations exist)
+    public function forceDelete($id)
+    {
+        $wave = RegistrationWave::withTrashed()->findOrFail($id);
+        try {
+            // Safety: ensure no registrations exist in any linked class sections
+            $regCount = \App\Models\Registration::whereIn('class_section_id', function ($q) use ($wave) {
+                $q->from('registration_wave_class_section')
+                    ->select('class_section_id')
+                    ->where('registration_wave_id', $wave->id);
+            })->count();
+            if ($regCount > 0) {
+                return redirect()->route('registration-waves.trashed')
+                    ->with('error', 'Không thể xóa vĩnh viễn vì có đăng ký của sinh viên liên quan.');
+            }
+
+            \DB::transaction(function () use ($wave) {
+                // Remove pivot entries explicitly then force delete
+                $wave->classSections()->detach();
+                $wave->forceDelete();
+            });
+
+            LogEntry::create([
+                'user_id' => auth()->id(),
+                'action' => 'registration_wave_force_deleted',
+                'metadata' => json_encode(['wave_name' => $wave->name]),
+            ]);
+
+            return redirect()->route('registration-waves.trashed')->with('success', 'Đã xóa vĩnh viễn đợt đăng ký.');
+        } catch (\Throwable $e) {
+            report($e);
+            return redirect()->route('registration-waves.trashed')->with('error', 'Không thể xóa vĩnh viễn. Vui lòng thử lại sau.');
+        }
+    }
+
+    // Bulk delete waves (soft delete). Rules:
+    // - If wave has not started yet => delete directly
+    // - Otherwise, delete only when no registrations exist in its class sections
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids'); // optional list; if omitted, apply to all waves
+        $query = RegistrationWave::query();
+        if (is_array($ids) && !empty($ids)) {
+            $query->whereIn('id', $ids);
+        }
+        $waves = $query->get();
+
+        $now = now();
+        $deleted = [];
+        $skipped = [];
+
+        foreach ($waves as $wave) {
+            $starts = \Carbon\Carbon::parse($wave->starts_at);
+            if ($now->lt($starts)) {
+                $wave->delete();
+                $deleted[] = $wave->name;
+                continue;
+            }
+
+            $regCount = \App\Models\Registration::whereIn('class_section_id', function ($q) use ($wave) {
+                $q->from('registration_wave_class_section')
+                    ->select('class_section_id')
+                    ->where('registration_wave_id', $wave->id);
+            })->count();
+
+            if ($regCount === 0) {
+                $wave->delete();
+                $deleted[] = $wave->name;
+            } else {
+                $skipped[] = $wave->name . " (" . $regCount . " đăng ký)";
+            }
+        }
+
+        $msgOk = count($deleted) ? ('Đã xóa ' . count($deleted) . ' đợt: ' . implode(', ', $deleted)) : null;
+        $msgSkip = count($skipped) ? ('Không thể xóa ' . count($skipped) . ' đợt: ' . implode('; ', $skipped)) : null;
+
+        $redir = redirect()->route('registration-waves.index');
+        if ($msgOk) $redir = $redir->with('success', $msgOk);
+        if ($msgSkip) $redir = $redir->with('error', $msgSkip);
+        return $redir;
     }
 }
